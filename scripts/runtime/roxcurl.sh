@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 
-function die() {
-	echo >&2 "$@"
-	exit 1
-}
+SCRIPT="$(python -c "import os; print(os.path.realpath('$0'))")"
+source "$(dirname "$SCRIPT")/../../lib/common.sh"
 
 url="$1"
 shift
