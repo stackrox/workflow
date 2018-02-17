@@ -33,3 +33,8 @@ function die() {
 	efatal "$@"
 	exit 1
 }
+
+# Gets the current branch.
+function get_current_branch() {
+  git branch | sed -n -e 's/^\* \(.*\)/\1/p'
+}

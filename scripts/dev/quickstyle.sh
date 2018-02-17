@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# Runs style targets for all Go files that have changed between the current code
-# and develop. Since it only targets the files that have changed, it is significantly faster.
+# Runs style targets for all Go files that have changed between the current code and develop.
+# Since it only targets the files that have changed, it is significantly faster.
 # However, it is not guaranteed to be correct. (Although it should be 99% of the time.)
 # Usage: quickstyle (while inside the stackrox repo)
 

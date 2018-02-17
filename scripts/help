@@ -19,7 +19,7 @@ def list_commands():
 
     # Be resilient to the script being invoked directly without the symlink.
     if dirname.endswith("workflow/scripts"):
-        dirname= dirname[:-len("scripts")] + "bin"
+        dirname = dirname[:-len("scripts")] + "bin"
 
     if not dirname.endswith("workflow/bin"):
         print("Error finding the directory with commands. "
@@ -31,7 +31,7 @@ def list_commands():
         print("Couldn't find any commands in {}.".format(dirname))
         sys.exit(1)
 
-    for command in commands:
+    for command in sorted(commands):
         help_lines = get_help_lines(os.path.join(dirname, command))
         first_help_line = ""
         if len(help_lines) > 0:
