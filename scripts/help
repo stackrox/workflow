@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+import os
+import sys
+from distutils.spawn import find_executable
+
+def print_not_found_and_exit(command):
+    print("Couldn't find command: {}".format(command))
+    print("Either the command doesn't exist, or you haven't added the bin folder to your path.")
+    sys.exit(1)
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: {} <command_name>".format(sys.argv[0]))
+        sys.exit(1)
+    
+    command = sys.argv[1]
+
+    # The path to the symlink in bin
+    command_file = find_executable(command)
+    if command_file is None:
+        print_not_found_and_exit(command)
+    # Dereference the symlink
+    real_path = os.path.realpath(command_file)
+    if not os.path.isfile(real_path):
+        print_not_found_and_exit(command)
+
+    with open(real_path, 'r') as f:
+        help_lines = []
+        for line in f:
+            s_line = line.strip()
+            if len(s_line) == 0:
+                continue
+            if s_line.startswith('#!'):
+                continue
+            if not s_line.startswith('#'):
+                break
+            help_lines.append(s_line.lstrip('# '))
+        
+        if len(help_lines) == 0:
+            print("Command {} doesn't appear to have an explanation. Please consider adding one.\n"
+                  "Comments at the top of the script are interpreted as explanations.".format(command))
+            sys.exit(1)
+        print("Help for {}:\n{}".format(command, '\n'.join(help_lines)))
