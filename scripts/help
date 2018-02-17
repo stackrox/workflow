@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+# Prints the help message for a Rox workflow command.
+# Usage: roxhelp <command_name> OR roxhelp --list-all to list all commands.
+
 from __future__ import print_function
 import os
 import sys
@@ -10,13 +13,33 @@ def print_not_found_and_exit(command):
     print("Either the command doesn't exist, or you haven't added the bin folder to your path.")
     sys.exit(1)
 
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: {} <command_name>".format(sys.argv[0]))
-        sys.exit(1)
-    
-    command = sys.argv[1]
 
+def list_commands():
+    dirname = os.path.abspath(os.path.dirname(__file__))
+
+    # Be resilient to the script being invoked directly without the symlink.
+    if dirname.endswith("workflow/scripts"):
+        dirname= dirname[:-len("scripts")] + "bin"
+
+    if not dirname.endswith("workflow/bin"):
+        print("Error finding the directory with commands. "
+              "Is this script inside the workflow repository?")
+        sys.exit(1)
+
+    commands = os.listdir(dirname)
+    if len(commands) == 0:
+        print("Couldn't find any commands in {}.".format(dirname))
+        sys.exit(1)
+
+    for command in commands:
+        help_lines = get_help_lines(os.path.join(dirname, command))
+        first_help_line = ""
+        if len(help_lines) > 0:
+            first_help_line = " - {}".format(help_lines[0])
+        print("{}{}".format(command, first_help_line))
+
+
+def get_help_lines(command):
     # The path to the symlink in bin
     command_file = find_executable(command)
     if command_file is None:
@@ -37,9 +60,25 @@ if __name__ == "__main__":
             if not s_line.startswith('#'):
                 break
             help_lines.append(s_line.lstrip('# '))
-        
-        if len(help_lines) == 0:
-            print("Command {} doesn't appear to have an explanation. Please consider adding one.\n"
-                  "Comments at the top of the script are interpreted as explanations.".format(command))
-            sys.exit(1)
-        print("Help for {}:\n{}".format(command, '\n'.join(help_lines)))
+    return help_lines
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage:\n"
+              "{} <command_name> (to print help for command <command_name>)\n"
+              "{} --list-all (to list all available Rox commands)".format(sys.argv[0], sys.argv[0]))
+        sys.exit(1)
+
+    if sys.argv[1] == "--list-all":
+        list_commands()
+        sys.exit(0)
+
+    command = sys.argv[1]
+
+    help_lines = get_help_lines(command)
+    if len(help_lines) == 0:
+        print("Command {} doesn't appear to have an explanation. Please consider adding one.\n"
+              "Comments at the top of the script are interpreted as explanations.".format(command))
+        sys.exit(1)
+    print("Help for {}:\n{}".format(command, '\n'.join(help_lines)))
