@@ -2,7 +2,11 @@
 This repository is a collection of workflow scripts which (hopefully) boost StackRox engineers' productivity. It has scripts for common tasks that need to be executed frequently, and aims to make them simple.
 
 ## How To Use
-All the scripts are symlinked to in the `bin/` folder. Clone the repo, and add the `bin/` folder to your path. That way, you'll be able to run all the commands by name.
+All the scripts are symlinked to in the `bin/` folder. Clone the repo, and add the `bin/` folder to your path. That way, you'll be able to run all the commands by name. If you're using the `bash` shell, the preferred way is to source the `env.sh` script in every new session. Assuming this repository is checked out to `~/dev/bitbucket.org/stack-rox/workflow`, add the following line to your `~/.bash_profile` file:
+
+```sh
+source ~/dev/bitbucket.org/stack-rox/workflow/env.sh
+```
 
 There is a `roxhelp` command. You can do `roxhelp --list-all` to see all commands, and `roxhelp <command-name>` to see more about a particular command.
 
