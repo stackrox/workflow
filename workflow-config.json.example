@@ -1,4 +1,9 @@
 {
   "bitbucket_username": "",
-  "bitbucket_password": ""
+  "bitbucket_password": "",
+  "dev-vm": {
+  	"name": "roxer-dev",
+  	"resource-group": "roxer-rg",
+  	"use-tmux": true
+  }
 }

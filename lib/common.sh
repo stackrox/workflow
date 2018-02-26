@@ -2,6 +2,8 @@
 
 CONFIG_FILE="$HOME/.stackrox/workflow-config.json"
 
+ROX_WORKFLOW_WORKDIR="$HOME/.roxworkflow-workdir"
+
 bold="$(tput bold)"
 reset="$(tput sgr0)"
 green="$(tput setaf 2)"
@@ -25,15 +27,32 @@ function ewarn() {
 	eecho -e "$reset"
 }
 
+function eerror() {
+  eecho -en "${bold}${red}[ERROR]${black} "
+  eecho -n "$@"
+  eecho -e "$reset"
+}
 function efatal() {
-	eecho -en "${bold}${red}[FATAL]${black} "
-	eecho -n "$@"
-	eecho -e "$reset"
+  eecho -en "${bold}${red}[FATAL]${black} "
+  eecho -n "$@"
+  eecho -e "$reset"
 }
 
 function die() {
 	efatal "$@"
 	exit 1
+}
+
+function workfile() {
+  local relpath="$1"
+  local cmd="$2"
+  local fullpath="${ROX_WORKFLOW_WORKDIR}/${relpath}"
+  if [[ ! -f "$fullpath" || $(ls -s "$fullpath" | awk '{print$1}') -eq 0 ]]; then
+    mkdir -p "$(dirname "$fullpath")" 2>/dev/null
+    rm -f "$fullpath" 2>/dev/null
+    "$SHELL" -c "$cmd" >"$fullpath" || return 1
+  fi
+  echo "$fullpath"
 }
 
 # Gets the current branch.
