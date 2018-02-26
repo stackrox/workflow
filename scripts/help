@@ -59,7 +59,10 @@ def get_help_lines(command):
                 continue
             if not s_line.startswith('#'):
                 break
-            help_lines.append(s_line.lstrip('# '))
+            s_line = s_line[1:]  # Strip '#'
+            if s_line.startswith(' '):  # Strip space following '#', if any
+                s_line = s_line[1:]
+            help_lines.append(s_line)
     return help_lines
 
 
