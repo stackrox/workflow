@@ -7,22 +7,6 @@
 SCRIPT="$(python -c "import os; print(os.path.realpath('$0'))")"
 source "$(dirname "$SCRIPT")/../../lib/common.sh"
 
-REMOTE=`git config --get remote.origin.url`
-if [ -z "$REMOTE" ]; then
-  die "Couldn't find the remote."
-fi
+repo="$(get_bitbucket_repo)"
 
-if [[ "$REMOTE" = git* ]]; then
-  REMOTE=https://`echo ${REMOTE#git@} | tr : /`
-fi
-
-if [[ "$REMOTE" = *.git ]]; then
-  REMOTE=${REMOTE%%.git}
-fi
-
-CURR_BRANCH=`get_current_branch`
-if [ -z "$CURR_BRANCH" ]; then
-  die "Coudn't find the current branch."
-fi
-
-open ${REMOTE}/branch/`get_current_branch`
+browse https://bitbucket.org/"${repo}"/branch/"$(get_current_branch)"

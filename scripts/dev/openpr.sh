@@ -11,4 +11,4 @@ source "$(dirname "$SCRIPT")/../../lib/common.sh"
 PR_NUMBER="$(get_pr_number)"
 BITBUCKET_REPO="$(get_bitbucket_repo)"
 [[ -n "$PR_NUMBER" && -n "$BITBUCKET_REPO" ]] || die "Error getting PR info."
-open https://bitbucket.org/${BITBUCKET_REPO}/pull-requests/${PR_NUMBER}
+browse https://bitbucket.org/${BITBUCKET_REPO}/pull-requests/${PR_NUMBER}
