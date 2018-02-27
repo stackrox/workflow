@@ -110,3 +110,25 @@ function get_bitbucket_repo() {
   [[ -n "$REMOTE" ]] || die "Couldn't find the remote."
   echo $REMOTE
 }
+
+function browse() {
+  local platform="$(uname)"
+  if [[ "$platform" == "Linux" ]]; then
+    xdg-open "$@" >/dev/null
+  elif [[ "$platform" == "Darwin" ]]; then
+    open "$@"
+  else
+    eecho "Unsupported platform '$platform', please open $1 in a browser"
+  fi
+}
+
+function clipboard_copy() {
+  local platform="$(uname)"
+  if [[ "$platform" == "Linux" ]]; then
+    xclip -selection c
+  elif [[ "$platform" == "Darwin" ]]; then
+    pbcopy
+  else
+    eecho "Unsupported platform '$platform'"
+  fi
+}

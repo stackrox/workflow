@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-SCRIPT="$(python -c "import os; print(os.path.realpath('$0'))")"
+# Shuts down the Azure dev VM and deallocates it.
+
+SCRIPT="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
 source "$(dirname "$SCRIPT")/../../lib/common.sh"
 source "$(dirname "$SCRIPT")/../../lib/azure.sh"
 
