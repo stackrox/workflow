@@ -3,12 +3,10 @@
 SCRIPT="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
 source "$(dirname "$SCRIPT")/common.sh"
 
-AZURE_CONFIG="$CONFIG_FILE"
-
-if [[ -f "$AZURE_CONFIG" ]]; then
-	AZ_DEV_VM_NAME="$(jq -r <"$AZURE_CONFIG" '.["dev-vm"].name' 2>/dev/null)"
-	AZ_DEV_VM_RG="$(jq -r <"$AZURE_CONFIG" '.["dev-vm"] | .["resource-group"] // .name + "-rg"' 2>/dev/null)"
-	AZ_DEV_VM_USE_TMUX="$(jq -r <"$AZURE_CONFIG" '.["dev-vm"]["use-tmux"] // false' 2>/dev/null)"
+if [[ -f "$CONFIG_FILE" ]]; then
+	AZ_DEV_VM_NAME="$(configq '.["dev-vm"].name' 2>/dev/null)"
+	AZ_DEV_VM_RG="$(configq '.["dev-vm"] | .["resource-group"] // .name + "-rg"' 2>/dev/null)"
+	AZ_DEV_VM_USE_TMUX="$(configq '.["dev-vm"]["use-tmux"] // false' 2>/dev/null)"
 fi
 
 function check_az() {
@@ -20,8 +18,8 @@ function check_az() {
 
 function check_az_dev_vm() {
 	check_az || return 1
-	[[ -f "$AZURE_CONFIG" ]] || { eerror "Azure config file ${AZURE_CONFIG} not found"; return 1; }
-	[[ -n "$AZ_DEV_VM_NAME" ]] || { eerror "Azure config file ${AZURE_CONFIG} does not define a development VM name"; return 1; }
+	[[ -f "$CONFIG_FILE" ]] || { eerror "Config file ${CONFIG_FILE} not found"; return 1; }
+	[[ -n "$AZ_DEV_VM_NAME" ]] || { eerror "Config file ${CONFIG_FILE} does not define a development VM name"; return 1; }
 	local az_dev_vm_file="$(workfile azure/dev-vm.json "az vm show -g '$AZ_DEV_VM_RG' -n '$AZ_DEV_VM_NAME'")"
 	[[ $? -eq 0 && -n "$az_dev_vm_file" ]] || { eerror "Couldn't get information about Azure dev VM"; return 1; }
 	AZ_DEV_VM_USER="$(jq -r <"${az_dev_vm_file}" '.osProfile.adminUsername' 2>/dev/null)"

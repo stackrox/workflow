@@ -60,13 +60,18 @@ function get_current_branch() {
   git branch | sed -n -e 's/^\* \(.*\)/\1/p'
 }
 
+function configq() {
+  [[ -f "$CONFIG_FILE" ]] || return 1
+  jsmin <"$CONFIG_FILE" | jq -r "$@"
+}
+
 function get_pr_number() {
   BRANCH="$(get_current_branch)"
   [[ -n "$BRANCH" ]] || die "Couldn't find current branch. Are you in a repository?"
   [[ -f "$CONFIG_FILE" ]] || die "You need to add a config file for this to work."
-  BITBUCKET_USERNAME="$(jq '.bitbucket_username // empty' -r < $CONFIG_FILE)"
+  BITBUCKET_USERNAME="$(configq '.bitbucket.username // empty')"
   [[ -n "$BITBUCKET_USERNAME" ]] || die "Couldn't read bitbucket username from config file."
-  BITBUCKET_PASSWORD="$(jq '.bitbucket_password // empty' -r < $CONFIG_FILE)"
+  BITBUCKET_PASSWORD="$(configq '.bitbucket.password // empty')"
   [[ -n "$BITBUCKET_PASSWORD" ]] || die "Couldn't read bitbucket password from config file."
   BITBUCKET_REPO="$(get_bitbucket_repo)"
 
