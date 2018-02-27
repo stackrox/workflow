@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
 # Opens the web page corresponding to the Pull Request for the currently checked-out branch of the repo you're in.
-# NOTE: Currently supports Mac OS and Bitbucket only.
+# NOTE: Currently supports Bitbucket only.
 # You WILL need to have your Bitbucket creds checked in to ~/.stackrox/workflow-config.json for this to work.
 # Usage: openpr (while inside the repo, with the branch you want to open checked out.)
 
 SCRIPT="$(python -c "import os; print(os.path.realpath('$0'))")"
-source "$(dirname "$SCRIPT")/../../lib/common.sh"
+source "$(dirname "$SCRIPT")/../../lib/bitbucket.sh"
 
-PR_NUMBER="$(get_pr_number)"
-BITBUCKET_REPO="$(get_bitbucket_repo)"
-[[ -n "$PR_NUMBER" && -n "$BITBUCKET_REPO" ]] || die "Error getting PR info."
-browse https://bitbucket.org/${BITBUCKET_REPO}/pull-requests/${PR_NUMBER}
+pr_number="$(get_pr_number)"
+bitbucket_repo="$(get_bitbucket_repo)"
+[[ -n "$pr_number" && -n "$bitbucket_repo" ]] || die "Error getting PR info."
+browse "https://bitbucket.org/${bitbucket_repo}/pull-requests/${pr_number}"

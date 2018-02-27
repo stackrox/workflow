@@ -7,7 +7,7 @@ if [[ -f "$CONFIG_FILE" ]]; then
 	AZ_DEV_VM_NAME="$(configq '.["dev-vm"].name // empty' 2>/dev/null)"
 	AZ_DEV_VM_RG="$(configq '.["dev-vm"] | .["resource-group"] // .name + "-rg"' 2>/dev/null)"
 	AZ_DEV_VM_USE_TMUX="$(configq '.["dev-vm"]["use-tmux"] // false' 2>/dev/null)"
-	AZ_DEV_VM_ID_FILE=$HOME/.ssh/"$(configq '.["dev-vm"]["id-file"] // "id-rsa"' 2>/dev/null)"
+	AZ_DEV_VM_ID_FILE="$(configq '.["dev-vm"]["id-file"] | select (. != null) | "'"$HOME"'/.ssh/" + .' 2>/dev/null)"
 fi
 
 function check_az() {
