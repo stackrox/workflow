@@ -7,6 +7,12 @@
 SCRIPT="$(python -c "import os; print(os.path.realpath('$0'))")"
 source "$(dirname "$SCRIPT")/../../lib/common.sh"
 
-repo="$(get_bitbucket_repo)"
+REPO="$(get_bitbucket_repo)"
 
-browse https://bitbucket.org/"${repo}"/branch/"$(get_current_branch)"
+[[ -n "$REPO" ]] || die "Couldn't get the bitbucket repo."
+
+BRANCH="$(get_current_branch)"
+
+[[ -n "$BRANCH" ]] || die "Couldn't get the current branch."
+
+browse https://bitbucket.org/"${REPO}"/branch/"${BRANCH}"
