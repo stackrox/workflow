@@ -14,6 +14,9 @@
     // The resource group of the development VM (e.g., "malte-rg"). Will default to "<name>-rg" if unset.
     "resource-group": "",
     // Use tmux for SSH sessions. Defaults to false if unset.
-    "use-tmux": false
+    "use-tmux": false,
+    // The name of your Azure ID file. Example: If it's ~/.ssh/azure_id_rsa, just put in azure_id_rsa.
+    // (DO NOT put in the "~/.ssh".) Defaults to id_rsa if unset.
+    "id-file": ""
   }
 }
