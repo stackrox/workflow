@@ -16,7 +16,7 @@
     // Use tmux for SSH sessions. Defaults to false if unset.
     "use-tmux": false,
     // The name of your Azure ID file. Example: If it's ~/.ssh/azure_id_rsa, just put in azure_id_rsa.
-    // (DO NOT put in the "~/.ssh".) Defaults to id_rsa if unset.
+    // (DO NOT put in the "~/.ssh".) Uses the default identity if unset.
     "id-file": ""
   }
 }
