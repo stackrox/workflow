@@ -62,9 +62,9 @@ function configq() {
 function browse() {
   local platform="$(uname)"
   if [[ "$platform" == "Linux" ]]; then
-    xdg-open "$@" >/dev/null
+    xdg-open "$@" >/dev/null &
   elif [[ "$platform" == "Darwin" ]]; then
-    open "$@"
+    open "$@" &
   else
     eecho "Unsupported platform '$platform', please open $@ in a browser"
   fi
