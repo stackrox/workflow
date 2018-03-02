@@ -1,6 +1,25 @@
 #!/usr/bin/env bash
 
-SCRIPT="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
+# even though it says bash above, this file needs to be sourced, so it should be more friendly to
+# other shells
+
+# bash
+SCRIPT="${BASH_SOURCE[0]}"
+
+# zsh
+if [[ -z "$SCRIPT" ]]; then
+  # use zsh
+  # (%) = path expand this value; %x = prompt string for current script file
+  SCRIPT="${(%):-%x}"
+fi
+
+# something else? Please add support!
+if [[ -z "$SCRIPT" ]]; then
+  echo >&2 "$(tput bold)$(tput setaf 1)[FATAL] could not determine path of env.sh$(tput setaf 0)"
+  return
+fi
+
+SCRIPT="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "$SCRIPT")"
 
 ROX_WORKFLOW_BIN="$(dirname "$SCRIPT")/bin"
 ROX_WORKFLOW_BIN="$(cd "$ROX_WORKFLOW_BIN"; pwd)"

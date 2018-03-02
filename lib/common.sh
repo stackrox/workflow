@@ -55,9 +55,13 @@ function workfile() {
   echo "$fullpath"
 }
 
+function strip_comments() {
+  sed 's@//.*$@@'
+}
+
 function configq() {
   [[ -f "$CONFIG_FILE" ]] || return 1
-  jsmin <"$CONFIG_FILE" | jq -r "$@"
+  strip_comments <"$CONFIG_FILE" | jq -r "$@"
 }
 function browse() {
   local platform="$(uname)"
@@ -73,7 +77,7 @@ function browse() {
 function clipboard_copy() {
   local platform="$(uname)"
   if [[ "$platform" == "Linux" ]]; then
-    xclip -selection c
+    xsel -i -pb
   elif [[ "$platform" == "Darwin" ]]; then
     pbcopy
   else

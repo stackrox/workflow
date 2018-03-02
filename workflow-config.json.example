@@ -1,3 +1,5 @@
+// This is a JSON file, but we do ignore // comments, like this one.
+// Please don't use C style /* */ comments, they won't work.
 {
   // Settings for BitBucket integration
   "bitbucket": {

@@ -7,9 +7,21 @@ platform="$(uname)"
 
 setup_script=""
 if [[ "$platform" == "Darwin" ]]; then
-  setup_script="$(dirname "$SCRIPT")/setup/osx.sh"
+  setup_script="osx.sh"
+fi
+
+if [[ "$platform" == "Linux" ]]; then
+  if [[ -f /etc/lsb-release ]]; then
+    distrib=$(env -i bash -c '. /etc/lsb-release && echo ${DISTRIB_ID}')
+    if [[ -n "$distrib" ]]; then
+      platform="$platform $distrib"
+    fi
+    if [[ "$distrib" == "Ubuntu" ]]; then
+      setup_script="ubuntu.sh"
+    fi
+  fi
 fi
 
 [[ -n "$setup_script" ]] || die "Unsupported platform: $platform"
 
-exec "$setup_script"
+exec "$(dirname "$SCRIPT")/setup/${setup_script}"
