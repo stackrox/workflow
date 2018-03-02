@@ -37,7 +37,7 @@ function get_branch_from_pr() {
   echo "${branch_name}"
 }
 
-function get_pr_number() {
+function get_bitbucket_branch_info() {
   check_bitbucket_config || die "Please set/update your bitbucket configs."
   local branch
   branch="$(get_current_branch)"
@@ -48,18 +48,32 @@ function get_pr_number() {
   [[ -n "${bitbucket_repo}" ]] || die "Couldn't figure out which bitbucket repo the remote is."
 
   local query_url="https://api.bitbucket.org/2.0/repositories/${bitbucket_repo}/pullrequests"
-  local jq_get_branches=".values | [.[] | {isbranch: ({id: .id, branch: .source.branch.name} | .branch == \"${branch}\") , prnumber: .id} ]"
-  local jq_filter_branches=".[] | select(.isbranch == true) | .prnumber"
+  local jq_extract_branch_info=".values | .[] | select(.source.branch.name == \"${branch}\") | {prnumber: .id, title: .title}"
   while [[ -n "${query_url}" ]]; do
     local curl_out
     curl_out="$(curl -sS --user "${BITBUCKET_USERNAME}:${BITBUCKET_PASSWORD}" "${query_url}")"
     local jq_out
-    jq_out="$(echo "${curl_out}" | jq ''"${jq_get_branches}"'' |  jq ''"${jq_filter_branches}"'')"
-    [[ -n "${jq_out}" ]] && { echo "${jq_out}"; return; }
+    jq_out="$(echo "${curl_out}" | jq ''"${jq_extract_branch_info}"'')"
+    [[ -n "${jq_out}" ]] && { echo "${jq_out}"; return 0; }
     query_url="$(echo "${curl_out}" | jq -r '.next // empty')"
   done
+  return 1;
+}
 
-  die "Couldn't find the PR number for the current repo. Have you created a PR?"
+function get_pr_title() {
+  bitbucket_branch_info="$(get_bitbucket_branch_info)"
+  [[ -n "${bitbucket_branch_info}" ]] || die "Couldn't check the branch info from bitbucket for your current branch. Have you created a PR?"
+  title="$(jq -r '.title' <<< "${bitbucket_branch_info}")"
+  [[ -n "${title}" ]] || die "Couldn't get the PR title for your current branch. Have you created a PR?"
+  echo "${title}"
+}
+
+function get_pr_number() {
+  bitbucket_branch_info="$(get_bitbucket_branch_info)"
+  [[ -n "${bitbucket_branch_info}" ]] || die "Couldn't check the branch info from bitbucket for your current branch. Have you created a PR?"
+  pr_number="$(jq '.prnumber' <<< "${bitbucket_branch_info}")"
+  [[ -n "${pr_number}" ]] ||  die "Couldn't find the PR number for the current repo. Have you created a PR?"
+  echo "${pr_number}"
 }
 
 function get_bitbucket_repo() {

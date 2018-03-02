@@ -5,7 +5,7 @@
 # However, it is not guaranteed to be correct. (Although it should be 99% of the time.)
 # Usage: quickstyle (while inside the stackrox repo)
 
-SCRIPT="$(python -c "import os; print(os.path.realpath('$0'))")"
+SCRIPT="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
 source "$(dirname "$SCRIPT")/../../lib/common.sh"
 
 

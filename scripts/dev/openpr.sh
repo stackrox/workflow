@@ -5,7 +5,7 @@
 # You WILL need to have your Bitbucket creds checked in to ~/.stackrox/workflow-config.json for this to work.
 # Usage: openpr (while inside the repo, with the branch you want to open checked out.)
 
-SCRIPT="$(python -c "import os; print(os.path.realpath('$0'))")"
+SCRIPT="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
 source "$(dirname "$SCRIPT")/../../lib/bitbucket.sh"
 
 pr_number="$(get_pr_number)"
