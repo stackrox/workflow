@@ -61,16 +61,20 @@ function get_bitbucket_branch_info() {
 }
 
 function get_pr_title() {
+  local bitbucket_branch_info
   bitbucket_branch_info="$(get_bitbucket_branch_info)"
   [[ -n "${bitbucket_branch_info}" ]] || die "Couldn't check the branch info from bitbucket for your current branch. Have you created a PR?"
+  local title
   title="$(jq -r '.title' <<< "${bitbucket_branch_info}")"
   [[ -n "${title}" ]] || die "Couldn't get the PR title for your current branch. Have you created a PR?"
   echo "${title}"
 }
 
 function get_pr_number() {
+  local bitbucket_branch_info
   bitbucket_branch_info="$(get_bitbucket_branch_info)"
   [[ -n "${bitbucket_branch_info}" ]] || die "Couldn't check the branch info from bitbucket for your current branch. Have you created a PR?"
+  local pr_number
   pr_number="$(jq '.prnumber' <<< "${bitbucket_branch_info}")"
   [[ -n "${pr_number}" ]] ||  die "Couldn't find the PR number for the current repo. Have you created a PR?"
   echo "${pr_number}"
