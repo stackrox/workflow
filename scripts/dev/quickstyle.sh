@@ -12,8 +12,11 @@ source "$(dirname "$SCRIPT")/../../lib/common.sh"
 gitroot="$(git rev-parse --show-toplevel)"
 [[ $? -eq 0 ]] || die "Current directory is not a git repository."
 
+diffbase="$(git merge-base HEAD origin/develop)"
+[[ $? -eq 0 ]] || die "Failed to determine diffbase"
+
 IFS=$'\n' read -d '' -r -a changed_files < <(
-	git diff origin/develop --name-status . |
+	git diff "$diffbase" --name-status . |
 	egrep '(\.go|\.java)$' |
 	sed -n -E -e "s@^[AM][[:space:]]+@${gitroot}/@p") || true
 
