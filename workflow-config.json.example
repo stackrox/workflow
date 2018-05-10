@@ -20,5 +20,14 @@
     // The name of your Azure ID file. Example: If it's ~/.ssh/azure_id_rsa, just put in azure_id_rsa.
     // (DO NOT put in the "~/.ssh".) Uses the default identity if unset.
     "id-file": ""
+  },
+  // Settings for GCP development VM
+  "gcp-dev-vm": {
+    // The name of the development VM (e.g., "malte-dev"). Mandatory.
+    "name": "",
+    // The zone of the development VM (e.g., "us-west1-a"). Mandatory.
+    "zone": "",
+    // Use tmux for SSH sessions. Defaults to false if unset.
+    "use-tmux": false
   }
 }
