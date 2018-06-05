@@ -18,7 +18,7 @@ diffbase="$(git merge-base HEAD origin/develop)"
 IFS=$'\n' read -d '' -r -a changed_files < <(
 	git diff "$diffbase" --name-status . |
 	egrep '(\.go|\.java)$' |
-	sed -n -E -e "s@^[AM][[:space:]]+@${gitroot}/@p") || true
+	sed -n -E -e "s@^[AM][[:space:]]+|^R[^[:space:]]*[[:space:]]+[^[:space:]]+[[:space:]]+@${gitroot}/@p") || true
 
 function gostyle() {
 	local status
