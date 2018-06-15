@@ -40,3 +40,38 @@ function cdrox() {
 	[[ -n "$GOENV_GOPATH" ]] || { echo >&2 "GOPATH could not be determined"; return 1; }
 	cd "${GOENV_GOPATH}/src/bitbucket.org/stack-rox/stackrox"
 }
+
+# The following modify the KUBECONFIG environment variable, so they need to be functions, not scrips.
+
+# Save the active kubernetes configuration in a named file (named either after the first argument, or, if empty,
+# after the setup name) and make it sticky for the current session.
+function save-kubecfg() {
+	local cfgname="$1"
+	local src_config="$HOME/.kube/config"
+	[[ -f "$src_config" ]] || { echo >&2 "Config file $src_config not found."; return 1; }
+	if [[ -z "$cfgname" ]]; then
+		cfgname="$(echo "$ROX_SETUP_NAME" | sed -E 's/[[:space:]]*:[^:]+:[[:space:]]*//g')"
+	fi
+	[[ -n "$cfgname" ]] || {
+		echo >&2 "Could not determine name under which to save config. Use '$0 <config-name>' or set the ROX_SETUP_NAME variable"
+		return 1
+	}
+	local configs_dir="$HOME/.kube/saved-configs"
+	mkdir -p "$configs_dir" || { echo >&2 "Failed to create $configs_dir directory."; return 1; }
+	local target_config="$configs_dir/$cfgname"
+	cp "$src_config" "$target_config" || { echo >&2 "Failed to save config as $target_config."; return 1; }
+	export KUBECONFIG="$target_config"
+	echo "Saved current kubernetes config as $cfgname and persisted in session."
+	return 0
+}
+
+# Load a named kubernetes configuration and make it sticky for the current session.
+function load-kubecfg() {
+	local cfgname="$1"
+	[[ -n "$cfgname" ]] || { echo >&2 "Usage: $0 <config-name>"; return 1; }
+	local src_config="$HOME/.kube/saved-configs/$cfgname"
+	[[ -f "$src_config" ]] || { echo >&2 "Configuration $cfgname not found."; return 1; }
+	export KUBECONFIG="$src_config"
+	echo "Restored kubernetes config $cfgname and persisted in session."
+	return 0
+}
