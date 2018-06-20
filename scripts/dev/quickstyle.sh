@@ -12,13 +12,23 @@ source "$(dirname "$SCRIPT")/../../lib/common.sh"
 gitroot="$(git rev-parse --show-toplevel)"
 [[ $? -eq 0 ]] || die "Current directory is not a git repository."
 
-diffbase="$(git merge-base HEAD origin/develop)"
+# This should return origin/develop for stackrox and origin/master for other repositories.
+masterbranch="$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/@@')"
+
+[[ "${masterbranch}" == "origin/master" || "${masterbranch}" == "origin/develop" ]] || die "Couldn't determine master branch (got ${masterbranch})"
+
+diffbase="$(git merge-base HEAD ${masterbranch})"
 [[ $? -eq 0 ]] || die "Failed to determine diffbase"
 
 IFS=$'\n' read -d '' -r -a changed_files < <(
 	git diff "$diffbase" --name-status . |
 	egrep '(\.go|\.java)$' |
 	sed -n -E -e "s@^[AM][[:space:]]+|^R[^[:space:]]*[[:space:]]+[^[:space:]]+[[:space:]]+@${gitroot}/@p") || true
+
+is_apollo=0
+if git remote -v | grep -q "apollo"; then
+	is_apollo=1
+fi
 
 function gostyle() {
 	local status
@@ -29,6 +39,7 @@ function gostyle() {
 		grep '\.go$'
 	)
 	[[ "${#gofiles[@]}" == 0 ]] && return 0
+	einfo "Running go style checks..."
 	einfo "fmt"
 	gofmt -s -l -w "${gofiles[@]}"
 	status=$?
@@ -47,14 +58,25 @@ function gostyle() {
 	local src_root="$(go env GOPATH)/src"
 	local packages
 	packages=($(printf '%s\n' "${godirs[@]}" | sed -e "s@^${src_root}/@@"))
-	local vet=("${gitroot}/build/scripts/go-vet.sh")
+	local vet
+	if (( is_apollo )) ; then
+		vet=("${gitroot}/tools/go-vet.sh")
+	else
+		vet=("${gitroot}/build/scripts/go-vet.sh")
+	fi
 	if [[ ! -x "${vet}" ]]; then
 		vet=(go vet)
 	fi
 	"${vet[@]}" "${packages[@]}" && (( status == 0 ))
 	status=$?
 	einfo "blanks"
-	"${gitroot}/scripts/import_validate.py" "${gofiles[@]}" && (( status == 0 ))
+	local blanks
+	if (( is_apollo )) ; then
+		blanks="${gitroot}/tools/import_validate.py"
+	else
+		blanks="${gitroot}/scripts/import_validate.py"
+	fi
+	"${blanks}" "${gofiles[@]}" && (( status == 0 ))
 	status=$?
 	return $status
 }
@@ -66,6 +88,7 @@ function javastyle() {
 		grep "${gitroot}/ml/.*java$"
 	)
 	[[ "${#javafiles[@]}" -eq 0 ]] && return 0
+	einfo "Running Java style checks..."
 	java -jar "${gitroot}/ml/checkstyle-8.5-all.jar" -c "${gitroot}/ml/stackrox_checks.xml" "${javafiles[@]}" > /tmp/lint.log
 	local num_error_lines="$(grep -e 'WARN' /tmp/lint.log | wc -l)"
 	local status=0
@@ -76,11 +99,9 @@ function javastyle() {
 
 [[ "${#changed_files[@]}" -eq 0 ]] && { ewarn "No changed Go or Java files found in current directory."; exit 0; }
 
-einfo "Running go style checks..."
 gostyle "${changed_files[@]}"
 gostatus=$?
 
-einfo "Running Java style checks..."
 javastyle "${changed_files[@]}"
 javastatus=$?
 
