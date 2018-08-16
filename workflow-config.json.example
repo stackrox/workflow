@@ -9,6 +9,8 @@
     // https://confluence.atlassian.com/bitbucket/app-passwords-828781300.html
     "password": "DO NOT PUT YOUR REAL PASSWORD HERE"
   },
+  // GitHub API Token
+  "github_token": "",
   // Settings for Azure development VM
   "dev-vm": {
     // The name of the development VM (e.g., "malte-dev"). Mandatory.

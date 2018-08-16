@@ -25,11 +25,6 @@ IFS=$'\n' read -d '' -r -a changed_files < <(
 	egrep '(\.go|\.java)$' |
 	sed -n -E -e "s@^[AM][[:space:]]+|^R[^[:space:]]*[[:space:]]+[^[:space:]]+[[:space:]]+@${gitroot}/@p") || true
 
-is_apollo=0
-if git remote -v | grep -q "apollo"; then
-	is_apollo=1
-fi
-
 function gostyle() {
 	local status
 	local changed_files=("$@")
@@ -58,12 +53,8 @@ function gostyle() {
 	local src_root="$(go env GOPATH)/src"
 	local packages
 	packages=($(printf '%s\n' "${godirs[@]}" | sed -e "s@^${src_root}/@@"))
-	local vet
-	if (( is_apollo )) ; then
-		vet=("${gitroot}/tools/go-vet.sh")
-	else
-		vet=("${gitroot}/build/scripts/go-vet.sh")
-	fi
+
+	vet="$(git ls-files | egrep '\bgo-vet\.sh$' | head -n 1)"
 	if [[ ! -x "${vet}" ]]; then
 		vet=(go vet)
 	fi
@@ -71,11 +62,8 @@ function gostyle() {
 	status=$?
 	einfo "blanks"
 	local blanks
-	if (( is_apollo )) ; then
-		blanks="${gitroot}/tools/import_validate.py"
-	else
-		blanks="${gitroot}/scripts/import_validate.py"
-	fi
+	blanks="$(git ls-files | egrep '\bimport_validate\.py$' | head -n 1)"
+	[[ -n "${blanks}" ]] || die "Couldn't find the script that implements make blanks. Is this repo supported by quickstyle?"
 	"${blanks}" "${gofiles[@]}" && (( status == 0 ))
 	status=$?
 	return $status

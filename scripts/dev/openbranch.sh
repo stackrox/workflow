@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 
 # Opens the web page corresponding to the currently checked-out branch of the repo you're in.
-# NOTE: Currently supports Bitbucket only.
 # Usage: openbranch (while inside the repo, with the branch you want to open checked out.)
 
 SCRIPT="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
-source "$(dirname "$SCRIPT")/../../lib/bitbucket.sh"
+source "$(dirname "$SCRIPT")/../../lib/git.sh"
 
-repo="$(get_bitbucket_repo)"
+service="$(bitbucket_or_github)"
+[[ $? -eq 0 ]] || die
 
-[[ -n "$repo" ]] || die "Couldn't get the bitbucket repo."
+SCRIPT="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
+source "$(dirname "$SCRIPT")/../../lib/${service}.sh"
 
-branch="$(get_current_branch)"
+branch_url="$(get_branch_url)"
+[[ -n "${branch_url}" ]] || die "Error getting branch URL."
+browse "${branch_url}"
 
-[[ -n "$branch" ]] || die "Couldn't get the current branch."
-
-browse https://bitbucket.org/"${repo}"/branch/"${branch}"

@@ -21,4 +21,6 @@ There is a `roxhelp` command. You can do `roxhelp --list-all` to see all command
 
 Some commands require you to have a config file. Copy the `workflow-config.json.example` file from this repo, and paste it in `~/.stackrox/workflow-config.json`; fill in all the fields. (Different commands will require different fields to be set; it's okay for you to not fill in the config entries for, say, Bitbucket, if you don't want to use the commands that require Bitbucket auth.)
 
+If you want to use commands that require GitHub auth, you can generate a token at https://github.com/settings/tokens and add it to the entry in your config.
+
 Note that you should NOT put in your actual Bitbucket password in the config file; instead, generate an app password following the instructions at https://confluence.atlassian.com/bitbucket/app-passwords-828781300.html, and add that to your config file.
