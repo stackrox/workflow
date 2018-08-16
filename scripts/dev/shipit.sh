@@ -10,7 +10,7 @@ check_bitbucket_config || die "Please set/update your bitbucket configs."
 
 git diff-index --quiet HEAD || die "Current working tree is not clean. Aborting..."
 
-bitbucket_repo="$(get_bitbucket_repo)"
+bitbucket_repo="$(get_user_slash_repo)"
 [[ -n "$bitbucket_repo" ]] || die "Couldn't get the bitbucket repo."
 
 pr_number="$(get_pr_number)"

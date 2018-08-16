@@ -92,7 +92,7 @@ function clipboard_copy() {
 function yes_no_prompt() {
   local prompt="$1"
   local tries=0
-  einfo "$prompt"
+  [[ -z "$prompt" ]] || einfo "$prompt"
   local answer=""
   while (( tries < 3 )) && { echo -n "Type 'yes' or 'no': "; read answer; } ; do
     answer="$(echo "$answer" | tr '[:upper:]' '[:lower:]')"

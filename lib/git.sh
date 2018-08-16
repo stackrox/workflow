@@ -61,3 +61,9 @@ function get_user_slash_repo() {
 
   die "Unsupported service ${service}"
 }
+
+function branch_exists() {
+	[[ $# == 1 ]] || return 1
+	local branch="$1"
+	git show-ref --verify --quiet "refs/heads/$branch"
+}
