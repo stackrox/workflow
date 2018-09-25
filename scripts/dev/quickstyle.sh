@@ -22,7 +22,7 @@ diffbase="$(git merge-base HEAD ${masterbranch})"
 
 IFS=$'\n' read -d '' -r -a changed_files < <(
 	git diff "$diffbase" --name-status . |
-	egrep '(\.go|\.java)$' |
+	egrep '(\.go|\.java|\.js)$' |
 	sed -n -E -e "s@^[AM][[:space:]]+|^R[^[:space:]]*[[:space:]]+[^[:space:]]+[[:space:]]+@${gitroot}/@p") || true
 
 function gostyle() {
@@ -85,7 +85,22 @@ function javastyle() {
 	return "${status}"
 }
 
-[[ "${#changed_files[@]}" -eq 0 ]] && { ewarn "No changed Go or Java files found in current directory."; exit 0; }
+function jsstyle() {
+	local jsfiles
+	local status
+	IFS=$'\n' read -d '' -r -a jsfiles < <(
+		printf '%s\n' "${changed_files[@]}" |
+		grep "${gitroot}/ui/.*js$"
+	)
+	[[ "${#jsfiles[@]}" -eq 0 ]] && return 0
+	einfo "Running JS style checks..."
+	(cd "${gitroot}/ui" && yarn --silent eslint "${jsfiles[@]}" --fix)
+	status=$?
+	return "${status}"
+}
+
+
+[[ "${#changed_files[@]}" -eq 0 ]] && { ewarn "No changed Go/Java/JS files found in current directory."; exit 0; }
 
 gostyle "${changed_files[@]}"
 gostatus=$?
@@ -93,6 +108,9 @@ gostatus=$?
 javastyle "${changed_files[@]}"
 javastatus=$?
 
-[[ "${gostatus}" -eq 0 && "${javastatus}" -eq 0 ]] && exit 0
+jsstyle "${changed_files[@]}"
+jsstatus=$?
+
+[[ "${gostatus}" -eq 0 && "${javastatus}" -eq 0 && "${jsstatus}" -eq 0 ]] && exit 0
 efatal "Style errors were found"
 exit 1
