@@ -9,7 +9,7 @@ reset="$(tput sgr0)"
 green="$(tput setaf 2)"
 yellow="$(tput setaf 3)"
 red="$(tput setaf 1)"
-black="$(tput setaf 0)"
+black="$(tput setaf 0; tput setab 7)"
 
 function eecho() {
 	echo >&2 "$@"
