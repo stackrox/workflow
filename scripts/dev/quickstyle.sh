@@ -31,7 +31,8 @@ function gostyle() {
 	local gofiles
 	IFS=$'\n' read -d '' -r -a gofiles < <(
 		printf '%s\n' "${changed_files[@]}" |
-		grep '\.go$'
+		grep '\.go$' |
+		grep -v 'mocks/'
 	)
 	[[ "${#gofiles[@]}" == 0 ]] && return 0
 	einfo "Running go style checks..."
