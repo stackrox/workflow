@@ -14,9 +14,21 @@ else
 	einfo "Found Homebrew."
 fi
 
+packages=(jq)
+
 einfo "Installing missing packages, if any ..."
-brew install jq 2>/dev/null
-[[ $? -eq 0 && -x "$(command -v jq)" ]] || \
+IFS=$'\n' read -d '' -r -a missing_packages < <(
+	{
+		brew ls --versions "${packages[@]}" | awk '{print$1}'
+		printf "%s\n" "${packages[@]}"
+	} | sort | uniq -u
+)
+status=0
+if [[ "${#missing_packages[@]}" > 0 ]]; then
+	brew install "${missing_packages[@]}"
+	status=$?
+fi
+[[ $status == 0 && -x "$(command -v jq)" ]] || \
 	die "Failed to install required packages"
 
 check_env_installed
