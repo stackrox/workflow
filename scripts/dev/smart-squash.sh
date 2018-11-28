@@ -3,8 +3,6 @@
 SCRIPT="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
 source "$(dirname "$SCRIPT")/../../lib/git.sh"
 
-target_branch="$1"
-
 git diff-index --quiet HEAD || die "Current working directory must be clean before rebasing."
 
 current_branch="$(get_current_branch)"
@@ -27,7 +25,7 @@ fi
 commit_msg="$(mktemp)"
 echo "Squashed $num_commits commits:" >"$commit_msg"
 echo >>"$commit_msg"
-git log --format='%s (%H)' "HEAD...${marker_commit}" >>"$commit_msg"
+git log --oneline "HEAD...${marker_commit}" >>"$commit_msg"
 
 git reset --soft "$marker_commit"
 git commit -F "$commit_msg"
