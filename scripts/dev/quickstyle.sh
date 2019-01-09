@@ -67,6 +67,12 @@ function gostyle() {
 	[[ -n "${blanks}" ]] || die "Couldn't find the script that implements make blanks. Is this repo supported by quickstyle?"
 	"${blanks}" "${gofiles[@]}" && (( status == 0 ))
 	status=$?
+	einfo "storage"
+	local storedprotos_verify
+	storedprotos_verify="$(git ls-files -- "${gitroot}" | egrep '\bstoredprotos/verify.go$' | head -n 1)"
+	[[ -n "${storedprotos_verify}" ]] || ewarn "Couldn't find the program that verifies storage interfaces."
+	[[ -n "${storedprotos_verify}" ]] && go run "${storedprotos_verify}" $(go list "${godirs[@]}") && (( status == 0 ))
+	status=$?
 	return $status
 }
 
