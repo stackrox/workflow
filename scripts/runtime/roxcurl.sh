@@ -7,12 +7,20 @@
 SCRIPT="$(python -c "import os; print(os.path.realpath('$0'))")"
 source "$(dirname "$SCRIPT")/../../lib/common.sh"
 
+: ${rox_url:=https://localhost:8000}
+: ${rox_dir:=${GOPATH?${HOME}/go}/src/github.com/stackrox/rox}
+password_file="${rox_dir}/deploy/k8s/central-deploy/password"
+
 url="$1"
 shift
 
 if [[ ! "$url" =~ ^https?:// ]]; then
-	[[ -n "$ROX_DIRECTOR_IP" ]] || die "ROX_DIRECTOR_IP is not set"
-	url="https://${ROX_DIRECTOR_IP}/${url#/}"
+	url="${rox_url%/}/${url#/}"
 fi
 
-curl -sSk -H "Authorization: $(roxc auth export)" "$url" "$@"
+auth=()
+if [[ -f "${password_file}" ]]; then
+	auth=(-u "admin:$(cat "${password_file}")")
+fi
+
+curl -sSk "${auth[@]}" "$url" "$@"
