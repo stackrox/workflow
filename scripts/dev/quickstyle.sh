@@ -86,13 +86,13 @@ function gostyle() {
 	"${blanks}" "${gofiles[@]}" && (( status == 0 ))
 	status=$?
 
-	go_run_program "storage" '\bstoredprotos/verify.go$' "${godirs[@]}" && (( status == 0))
+	go_run_program "storage" '\bstoredprotos/verify.go$' "${godirs[@]}" && (( status == 0 ))
 	status=$?
 
-	go_run_program "crosspkgimports" '\bcrosspkgimports/verify.go$' "${godirs[@]}" && (( status == 0))
+	go_run_program "crosspkgimports" '\bcrosspkgimports/verify.go$' "${godirs[@]}" && (( status == 0 ))
 	status=$?
 
-	go_run_program "uncheckederrors" '\buncheckederrors/cmd/main.go$' "${godirs[@]}" && (( status == 0))
+	go_run_program "uncheckederrors" '\buncheckederrors/cmd/main.go$' "${godirs[@]}" && (( status == 0 ))
 	status=$?
 
 	return $status
