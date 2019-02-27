@@ -39,7 +39,7 @@ function go_run_program() {
   local program="$(git ls-files -- "${gitroot}" | egrep "${filename_regex}" | head -n 1)"
   [[ -n "${program}" ]] || { ewarn "Couldn't find program ${filename_regex}"; return; }
   go run "${program}" $(go list "${godirs[@]}")
-  status=$?
+  local status=$?
   return "${status}"
 }
 
