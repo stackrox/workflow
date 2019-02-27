@@ -25,6 +25,24 @@ IFS=$'\n' read -d '' -r -a changed_files < <(
 	egrep '(\.go|\.java|\.js)$' |
 	sed -n -E -e "s@^[AM][[:space:]]+|^R[^[:space:]]*[[:space:]]+[^[:space:]]+[[:space:]]+@${gitroot}/@p") || true
 
+# Expected arguemnts:
+# 1. Program name (for printing)
+# 2. Filename regex.
+# 3. Array of godirs
+function go_run_program() {
+  local program_name=$1
+  einfo "${program_name}"
+  shift
+  local filename_regex=$1
+  shift
+  local godirs=("$@")
+  local program="$(git ls-files -- "${gitroot}" | egrep "${filename_regex}" | head -n 1)"
+  [[ -n "${program}" ]] || { ewarn "Couldn't find program ${filename_regex}"; return; }
+  go run "${program}" $(go list "${godirs[@]}")
+  status=$?
+  return "${status}"
+}
+
 function gostyle() {
 	local status
 	local changed_files=("$@")
@@ -55,7 +73,7 @@ function gostyle() {
 	local packages
 	packages=($(printf '%s\n' "${godirs[@]}" | sed -e "s@^${src_root}/@@"))
 
-	vet="$(git ls-files -- "${gitroot}" | egrep '\bgo-vet\.sh$' | head -n 1)"
+	vet="$(git ls-files -- "${gitroot}" | egrep '\bgo-vet\.sh$' | head -n 1)" 
 	if [[ ! -x "${vet}" ]]; then
 		vet=(go vet)
 	fi
@@ -67,12 +85,16 @@ function gostyle() {
 	[[ -n "${blanks}" ]] || die "Couldn't find the script that implements make blanks. Is this repo supported by quickstyle?"
 	"${blanks}" "${gofiles[@]}" && (( status == 0 ))
 	status=$?
-	einfo "storage"
-	local storedprotos_verify
-	storedprotos_verify="$(git ls-files -- "${gitroot}" | egrep '\bstoredprotos/verify.go$' | head -n 1)"
-	[[ -n "${storedprotos_verify}" ]] || ewarn "Couldn't find the program that verifies storage interfaces."
-	[[ -n "${storedprotos_verify}" ]] && go run "${storedprotos_verify}" $(go list "${godirs[@]}") && (( status == 0 ))
+
+	go_run_program "storage" '\bstoredprotos/verify.go$' "${godirs[@]}" && (( status == 0))
 	status=$?
+
+	go_run_program "crosspkgimports" '\bcrosspkgimports/verify.go$' "${godirs[@]}" && (( status == 0))
+	status=$?
+
+	go_run_program "uncheckederrors" '\buncheckederrors/cmd/main.go$' "${godirs[@]}" && (( status == 0))
+	status=$?
+
 	return $status
 }
 
