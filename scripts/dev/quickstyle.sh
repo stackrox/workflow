@@ -25,7 +25,7 @@ IFS=$'\n' read -d '' -r -a changed_files < <(
 	egrep '(\.go|\.java|\.js)$' |
 	sed -n -E -e "s@^[AM][[:space:]]+|^R[^[:space:]]*[[:space:]]+[^[:space:]]+[[:space:]]+@${gitroot}/@p") || true
 
-# Expected arguemnts:
+# Expected arguments:
 # 1. Program name (for printing)
 # 2. Filename regex.
 # 3. Array of godirs
@@ -39,8 +39,6 @@ function go_run_program() {
   local program="$(git ls-files -- "${gitroot}" | egrep "${filename_regex}" | head -n 1)"
   [[ -n "${program}" ]] || { ewarn "Couldn't find program ${filename_regex}"; return; }
   go run "${program}" $(go list "${godirs[@]}")
-  local status=$?
-  return "${status}"
 }
 
 function gostyle() {
@@ -73,7 +71,7 @@ function gostyle() {
 	local packages
 	packages=($(printf '%s\n' "${godirs[@]}" | sed -e "s@^${src_root}/@@"))
 
-	vet="$(git ls-files -- "${gitroot}" | egrep '\bgo-vet\.sh$' | head -n 1)" 
+	vet="$(git ls-files -- "${gitroot}" | egrep '\bgo-vet\.sh$' | head -n 1)"
 	if [[ ! -x "${vet}" ]]; then
 		vet=(go vet)
 	fi
@@ -86,13 +84,13 @@ function gostyle() {
 	"${blanks}" "${gofiles[@]}" && (( status == 0 ))
 	status=$?
 
-	go_run_program "storage" '\bstoredprotos/verify.go$' "${godirs[@]}" && (( status == 0 ))
+	go_run_program "storage" '\bstoredprotos/verify\.go$' "${godirs[@]}" && (( status == 0 ))
 	status=$?
 
-	go_run_program "crosspkgimports" '\bcrosspkgimports/verify.go$' "${godirs[@]}" && (( status == 0 ))
+	go_run_program "crosspkgimports" '\bcrosspkgimports/verify\.go$' "${godirs[@]}" && (( status == 0 ))
 	status=$?
 
-	go_run_program "uncheckederrors" '\buncheckederrors/cmd/main.go$' "${godirs[@]}" && (( status == 0 ))
+	go_run_program "uncheckederrors" '\buncheckederrors/cmd/main\.go$' "${godirs[@]}" && (( status == 0 ))
 	status=$?
 
 	return $status
