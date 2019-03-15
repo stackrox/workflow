@@ -17,7 +17,8 @@ getcreds ()
         fi
     fi
 
-    gcloud container clusters get-credentials "${cluster_name}" || { 
+    cluster_name="${cluster_name%-rg}"
+    gcloud container clusters get-credentials "${cluster_name}" "${@:2}" || {
         return 1
     }
     
@@ -26,7 +27,7 @@ getcreds ()
         echo >&2 'Please specify a gcloud username via the GCLOUD_USER environment variable'
         return 1
     }
-    kubectl create clusterrolebinding temporary-admin --clusterrole=cluster-admin --user="$GCLOUD_USER"
+    kubectl create clusterrolebinding "temporary-admin-${GCLOUD_USER%@*}" --clusterrole=cluster-admin --user="$GCLOUD_USER"
     if [[ "$(lsof -n -i tcp:8000 | wc -l)" -gt 0 ]]; then
         echo "WARNING: Port 8000 is bound. You might want to kill the process port-forwarding right now.";
         lsof -n -i tcp:8000;
