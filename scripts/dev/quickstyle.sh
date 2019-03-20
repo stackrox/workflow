@@ -87,7 +87,7 @@ function gostyle() {
 	go_run_program "storage" '\bstoredprotos/verify\.go$' "${godirs[@]}" && (( status == 0 ))
 	status=$?
 
-	go_run_program "crosspkgimports" '\bcrosspkgimports/verify\.go$' "${godirs[@]}" && (( status == 0 ))
+	go_run_program "validateimports" '\b(crosspkg|validate)imports/verify\.go$' "${godirs[@]}" && (( status == 0 ))
 	status=$?
 
 	go_run_program "uncheckederrors" '\buncheckederrors/cmd/main\.go$' "${godirs[@]}" && (( status == 0 ))
