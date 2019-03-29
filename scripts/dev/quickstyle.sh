@@ -84,13 +84,13 @@ function gostyle() {
 	"${blanks}" "${gofiles[@]}" && (( status == 0 ))
 	status=$?
 
-	go_run_program "storage" '\bstoredprotos/verify\.go$' "${godirs[@]}" && (( status == 0 ))
-	status=$?
-
 	go_run_program "validateimports" '\b(crosspkg|validate)imports/verify\.go$' "${godirs[@]}" && (( status == 0 ))
 	status=$?
 
-	go_run_program "uncheckederrors" '\buncheckederrors/cmd/main\.go$' "${godirs[@]}" && (( status == 0 ))
+	einfo "roxvet"
+	local rox_vet="$(go env GOPATH)/bin/roxvet"
+	[[ -x "${rox_vet}" ]] || go install "${gitroot}/tools/roxvet"
+	go vet -vettool "${rox_vet}" "${packages[@]}" && (( status == 0 ))
 	status=$?
 
 	return $status
