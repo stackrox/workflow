@@ -23,9 +23,21 @@ if (( num_commits < 2 )); then
 fi
 
 commit_msg="$(mktemp)"
-echo "Squashed $num_commits commits:" >"$commit_msg"
-echo >>"$commit_msg"
-git log --oneline "HEAD...${marker_commit}" >>"$commit_msg"
+effective_num_commits=0
+for commit in $(git rev-list --reverse "${marker_commit}"..HEAD); do
+  commit_message="$(git log --format=%B -n 1 "${commit}")"
+  # echo "${commit_message}"
+  if [[ ${commit_message} =~ ^X-Smart-Squash:\ Squashed\ ([[:digit:]]+)\ commits ]]; then
+    echo "${commit}" matched
+    num_commits_squashed="${BASH_REMATCH[1]}"
+    effective_num_commits="$((effective_num_commits+num_commits_squashed))"
+    echo "${commit_message}" | sed '1,2d' >> "${commit_msg}"
+  else
+    effective_num_commits="$((effective_num_commits+1))"
+    git log --oneline -n 1 "${commit}" >>"${commit_msg}"
+  fi
+done
+printf '%s\n\n%s\n' "X-Smart-Squash: Squashed ${effective_num_commits} commits:" "$(cat "${commit_msg}")" >"${commit_msg}"
 
 git reset --soft "$marker_commit"
 git commit -F "$commit_msg"
