@@ -26,9 +26,7 @@ commit_msg="$(mktemp)"
 effective_num_commits=0
 for commit in $(git rev-list --reverse "${marker_commit}"..HEAD); do
   commit_message="$(git log --format=%B -n 1 "${commit}")"
-  # echo "${commit_message}"
   if [[ ${commit_message} =~ ^X-Smart-Squash:\ Squashed\ ([[:digit:]]+)\ commits ]]; then
-    echo "${commit}" matched
     num_commits_squashed="${BASH_REMATCH[1]}"
     effective_num_commits="$((effective_num_commits+num_commits_squashed))"
     echo "${commit_message}" | sed '1,2d' >> "${commit_msg}"
