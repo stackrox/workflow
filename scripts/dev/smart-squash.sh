@@ -22,13 +22,24 @@ if (( num_commits < 2 )); then
 	exit 0
 fi
 
-commit_msg="$(mktemp)"
-echo "Squashed $num_commits commits:" >"$commit_msg"
-echo >>"$commit_msg"
-git log --oneline "HEAD...${marker_commit}" >>"$commit_msg"
+commit_msg_file="$(mktemp)"
+effective_num_commits=0
+for commit in $(git rev-list --reverse "${marker_commit}"..HEAD); do
+  commit_message="$(git log --format=%B -n 1 "${commit}")"
+  if [[ ${commit_message} =~ ^X-Smart-Squash:\ Squashed\ ([[:digit:]]+)\ commits ]]; then
+    num_commits_squashed="${BASH_REMATCH[1]}"
+    effective_num_commits="$((effective_num_commits+num_commits_squashed))"
+    tail -n +3 <<<"${commit_message}" >> "${commit_msg_file}"
+  else
+    effective_num_commits="$((effective_num_commits+1))"
+    git log --oneline -n 1 "${commit}" >>"${commit_msg_file}"
+  fi
+done
+commit_msg_contents="$(cat "${commit_msg_file}")"
+printf '%s\n\n%s\n' "X-Smart-Squash: Squashed ${effective_num_commits} commits:" "${commit_msg_contents}" >"${commit_msg_file}"
 
 git reset --soft "$marker_commit"
-git commit -F "$commit_msg"
-rm -f "$commit_msg"
+git commit -F "$commit_msg_file"
+rm -f "$commit_msg_file"
 
 einfo "Squashed ${num_commits} onto ${marker_commit}."
