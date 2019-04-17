@@ -6,7 +6,9 @@
 #
 # Uses ROX_AUTH_TOKEN for authentication. If not set,
 # it reads the default admin password from standard deploy.sh
-# in deploy/k8s/central-deploy/password
+# in either deploy/openshift/central-deploy/password, if 
+# ROX_ORCHESTRATOR_PLATFORM is openshift or deploy/k8s/central-deploy/password
+# if unset or set of k8s
 #
 # Example usage: roxcurl v1/imageIntegrations
 
@@ -32,7 +34,14 @@ fi
 auth=()
 if [[ -z "${ROX_AUTH_TOKEN-}" ]]; then
     : ${ROX_DIR:=${GOPATH?${HOME}/go}/src/github.com/stackrox/rox}
-    password_file="${ROX_DIR}/deploy/k8s/central-deploy/password"
+    
+    password_file="${ROX_DIR}/deploy/${ROX_ORCHESTRATOR_PLATFORM-k8s}/central-deploy/password"
+    
+    if [[ "${ROX_ORCHESTRATOR_PLATFORM-k8s}" != k8s && "${ROX_ORCHESTRATOR_PLATFORM-k8s}" != openshift ]]; then
+    	echo "Invalid value for environment variable ROX_ORCHESTRATOR_PLATFORM: ${ROX_ORCHESTRATOR_PLATFORM-}. Valid values are 'k8s' and 'openshift'." >&2
+	exit 2
+    fi
+  
     if [[ -f "${password_file}" ]]; then
 	auth=(-u "admin:$(cat "${password_file}")")
     fi
