@@ -11,7 +11,7 @@ source "$(dirname "$SCRIPT")/../../lib/gcp.sh"
 
 check_gcp_dev_vm || die "No or incorrect GCP dev VM config found"
 
-GCP_DEV_VM_EXTIP=$(gcloud --verbosity=none --format='value(networkInterfaces[0].accessConfigs[0].natIP)' compute instances list --filter="name=('${GCP_DEV_VM_NAME}') zone:(${GCP_DEV_VM_ZONE})")
+GCP_DEV_VM_EXTIP=$(gcloud --project stackrox-dev --verbosity=none --format='value(networkInterfaces[0].accessConfigs[0].natIP)' compute instances list --filter="name=('${GCP_DEV_VM_NAME}') zone:(${GCP_DEV_VM_ZONE})")
 
 [[ -n "$GCP_DEV_VM_EXTIP" ]] || { eerror "GCP VM ${GCP_DEV_VM_NAME} does not have external IP."; exit 1; }
 
