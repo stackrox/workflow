@@ -84,7 +84,10 @@ function gostyle() {
 	status=$?
 	einfo "blanks"
 	local blanks
-	blanks="$(git ls-files -- "${gitroot}" | egrep '\bimport_validate\.py$' | head -n 1)"
+	blanks="$({
+		git ls-files -- "${gitroot}" | egrep '\bfix-blanks\.sh$'
+		git ls-files -- "${gitroot}" | egrep '\bimport_validate\.py$'
+	} | head -n 1)"
 	[[ -n "${blanks}" ]] || die "Couldn't find the script that implements make blanks. Is this repo supported by quickstyle?"
 	"${blanks}" "${gofiles[@]}" && (( status == 0 ))
 	status=$?
