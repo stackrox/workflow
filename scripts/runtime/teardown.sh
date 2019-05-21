@@ -17,7 +17,7 @@ for regex in "${well_known_dev_context_regexes[@]}"; do
   fi
 done
 
-if (( matched == 0 )); then
+if (( ! matched )); then
   yes_no_prompt "Detected that you're connected to cluster ${current_context}, which is not a well-known dev environment. Are you sure you want to proceed with the teardown?" || { eecho "Exiting as requested"; exit 1; }
 fi
 
@@ -29,6 +29,8 @@ kubectl -n stackrox get cm,deploy,ds,networkpolicy,secret,svc,serviceaccount,val
 ## AND THEY WILL NEVER TALK TO US AGAIN.
 kubectl -n stackrox get pv,pvc -o name | xargs kubectl -n stackrox delete --wait
 
-for scc in central monitoring scanner sensor; do
-  oc delete scc $scc
-done
+if kubectl api-versions | grep -q openshift.io; then
+  for scc in central monitoring scanner sensor; do
+    oc delete scc $scc
+  done
+fi
