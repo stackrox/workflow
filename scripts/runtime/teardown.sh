@@ -13,6 +13,7 @@ matched=0
 for regex in "${well_known_dev_context_regexes[@]}"; do
   if [[ ${current_context} =~ ^${regex} ]]; then
     matched=1
+    break
   fi
 done
 
