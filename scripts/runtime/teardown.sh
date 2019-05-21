@@ -11,12 +11,14 @@ current_context="$(kubectl config current-context)"
 
 matched=0
 for regex in "${well_known_dev_context_regexes[@]}"; do
-  if [[ ${current_context} =~ ${regex} ]]; then
+  if [[ ${current_context} =~ ^${regex} ]]; then
     matched=1
   fi
 done
 
-(( matched == 1 )) || { yes_no_prompt "Detected that you're connected to a cluster ${current_context}; which is not a typical dev environment. Are you sure you want to proceed with the teardown?"; }
+if (( matched == 0 )); then
+  yes_no_prompt "Detected that you're connected to cluster ${current_context}, which is not a well-known dev environment. Are you sure you want to proceed with the teardown?" || { eecho "Exiting as requested"; exit 1; }
+fi
 
 # Delete deployments quickly. If we add a new deployment and forget to add it here, it'll get caught in the next line anyway.
 kubectl -n stackrox delete --grace-period=0 --force deploy/central deploy/sensor ds/collector deploy/monitoring
