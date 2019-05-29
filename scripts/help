@@ -51,10 +51,15 @@ def get_help_lines(command):
 
     with open(real_path, 'r') as f:
         help_lines = []
+        prev_line_empty = False
         for line in f:
             s_line = line.strip()
             if len(s_line) == 0:
+                if prev_line_empty:
+                    break
+                prev_line_empty = True
                 continue
+            prev_line_empty = False
             if s_line.startswith('#!'):
                 continue
             if not s_line.startswith('#'):
