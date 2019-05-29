@@ -63,6 +63,7 @@ function configq() {
   [[ -f "$CONFIG_FILE" ]] || return 1
   strip_comments <"$CONFIG_FILE" | jq -r "$@"
 }
+
 function browse() {
   local platform="$(uname)"
   if [[ "$platform" == "Linux" ]]; then
