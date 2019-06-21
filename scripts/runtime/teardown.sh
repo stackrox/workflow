@@ -5,7 +5,7 @@
 SCRIPT="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
 source "$(dirname "$SCRIPT")/../../lib/common.sh"
 
-well_known_dev_context_regexes=(docker-for-desktop gke.*setup-dev.*)
+well_known_dev_context_regexes=(docker-for-desktop minikube gke.*setup-dev.*)
 
 current_context="$(kubectl config current-context)"
 
