@@ -32,18 +32,22 @@ if [[ ! "$url" =~ ^https?:// ]]; then
 fi
 
 auth=()
-if [[ -z "${ROX_AUTH_TOKEN-}" ]]; then
-    : ${ROX_DIR:=${GOPATH?${HOME}/go}/src/github.com/stackrox/rox}
-    
-    password_file="${ROX_DIR}/deploy/${ROX_ORCHESTRATOR_PLATFORM-k8s}/central-deploy/password"
-    
-    if [[ "${ROX_ORCHESTRATOR_PLATFORM-k8s}" != k8s && "${ROX_ORCHESTRATOR_PLATFORM-k8s}" != openshift ]]; then
-    	echo "Invalid value for environment variable ROX_ORCHESTRATOR_PLATFORM: ${ROX_ORCHESTRATOR_PLATFORM-}. Valid values are 'k8s' and 'openshift'." >&2
-	exit 2
-    fi
-  
-    if [[ -f "${password_file}" ]]; then
-	auth=(-u "admin:$(cat "${password_file}")")
+if [[ -z "${ROX_AUTH_TOKEN:-}" ]]; then
+    if [[ -n "${ROX_ADMIN_PASSWORD:-}" ]]; then
+        auth=(-u "admin:${ROX_ADMIN_PASSWORD}")
+    else
+        : ${ROX_DIR:=${GOPATH?${HOME}/go}/src/github.com/stackrox/rox}
+        
+        password_file="${ROX_DIR}/deploy/${ROX_ORCHESTRATOR_PLATFORM-k8s}/central-deploy/password"
+        
+        if [[ "${ROX_ORCHESTRATOR_PLATFORM-k8s}" != k8s && "${ROX_ORCHESTRATOR_PLATFORM-k8s}" != openshift ]]; then
+        	echo "Invalid value for environment variable ROX_ORCHESTRATOR_PLATFORM: ${ROX_ORCHESTRATOR_PLATFORM-}. Valid values are 'k8s' and 'openshift'." >&2
+    	exit 2
+        fi
+      
+        if [[ -f "${password_file}" ]]; then
+    	auth=(-u "admin:$(cat "${password_file}")")
+        fi
     fi
 else
     auth=(-H "Authorization: Bearer ${ROX_AUTH_TOKEN}")
