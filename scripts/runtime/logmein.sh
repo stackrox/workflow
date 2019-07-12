@@ -27,7 +27,6 @@ if [[ $# -eq 1 ]]; then
 	if ! [[ "$ROX_BASE_URL" =~ ^https?:// ]]; then
 		ROX_BASE_URL="https://${ROX_BASE_URL}"
 	fi
-	ROX_BASE_URL="${ROX_BASE_URL}"
 elif [[ $# -ne 0 ]]; then
 	die "Must specify at most one argument"
 fi
