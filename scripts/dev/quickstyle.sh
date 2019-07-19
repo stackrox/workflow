@@ -95,9 +95,15 @@ function gostyle() {
 
 	einfo "roxvet"
 	local rox_vet="$(go env GOPATH)/bin/roxvet"
-	[[ -x "${rox_vet}" ]] || go install "${gitroot}/tools/roxvet"
-	go vet -vettool "${rox_vet}" "${packages[@]}" && (( status == 0 ))
-	status=$?
+	if [[ ! -x "${rox_vet}" ]] && [[ -d "${gitroot}/tools/roxvet" ]]; then
+	    go install "${gitroot}/tools/roxvet"
+	fi
+	if [[ -x "${rox_vet}" ]]; then
+	    go vet -vettool "${rox_vet}" "${packages[@]}" && (( status == 0 ))
+	    status=$?
+	else
+	    ewarn "roxvet not found"
+	fi
 
 	return $status
 }
