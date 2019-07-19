@@ -83,10 +83,11 @@ function gostyle() {
 		git ls-files -- "${gitroot}" | egrep '\bfix-blanks\.sh$'
 		git ls-files -- "${gitroot}" | egrep '\bimport_validate\.py$'
 	} | head -n 1)"
-	[[ -n "${blanks}" ]] || ewarn "Couldn't find the script that implements make blanks. Is this repo supported by quickstyle?"
-	if [[ -x "${blanks}" ]] ; then
+	if [[ -x "${blanks}" ]]; then
 		"${blanks}" "${gofiles[@]}" && (( status == 0 ))
 		status=$?
+	else
+	    ewarn "Couldn't find the script that implements make blanks. Is this repo supported by quickstyle?"
 	fi
 
 	go_run_program "validateimports" '\b(crosspkg|validate)imports/verify\.go$' "${godirs[@]}" && (( status == 0 ))
