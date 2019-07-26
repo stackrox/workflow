@@ -24,6 +24,8 @@ fi
 # Delete deployments quickly. If we add a new deployment and forget to add it here, it'll get caught in the next line anyway.
 kubectl -n stackrox delete --grace-period=0 --force deploy/central deploy/sensor ds/collector deploy/monitoring
 kubectl -n stackrox get application,cm,deploy,ds,networkpolicy,secret,svc,serviceaccount,validatingwebhookconfiguration -o name | xargs kubectl -n stackrox delete --wait
+# Only delete RBAC/PSP-related resources that contain "stackrox"
+kubectl -n stackrox get clusterrole,clusterrolebinding,role,rolebinding,psp -o name | grep stackrox | xargs kubectl -n stackrox delete --wait
 
 ## DO NOT RUN THIS IN A CUSTOMER ENVIRONMENT, IT WILL DELETE ALL THEIR DATA
 ## AND THEY WILL NEVER TALK TO US AGAIN.
@@ -34,3 +36,5 @@ if kubectl api-versions | grep -q openshift.io; then
     oc delete scc $scc
   done
 fi
+
+einfo "Teardown complete."
