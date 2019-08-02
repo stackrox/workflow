@@ -96,6 +96,16 @@ function gostyle() {
 	go vet -vettool "${rox_vet}" "${packages[@]}" && (( status == 0 ))
 	status=$?
 
+	einfo "staticcheck"
+	local staticcheck_bin
+	staticcheck_bin="$(git ls-files -- "${gitroot}" | egrep '\bstaticcheck-wrap.sh$')"
+	if [[ -x "${staticcheck_bin}" ]]; then
+		"${staticcheck_bin}" "${packages[@]}" && (( status == 0 ))
+		status=$?
+	else
+		ewarn "Skipping staticcheck, doesn't appear to be supported in the repo."
+	fi
+
 	return $status
 }
 
