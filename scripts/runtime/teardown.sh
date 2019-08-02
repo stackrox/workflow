@@ -5,6 +5,17 @@
 SCRIPT="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
 source "$(dirname "$SCRIPT")/../../lib/common.sh"
 
+check_kubectl_version() {
+  local major_version
+  major_version="$(kubectl version -o json --client | jq '.clientVersion.major // empty' -r)"
+  local minor_version
+  minor_version="$(kubectl version -o json --client | jq '.clientVersion.minor // empty' -r)"
+  [[ -n "${major_version}" && -n "${minor_version}" ]] || die "Couldn't check kubectl version"
+  (( major_version > 1 || minor_version > 12 )) || die "You need to upgrade your kubectl for this to work. If on Mac OS, run { brew install kubernetes-cli || brew upgrade kubernetes-cli; } && brew link --overwrite kubernetes-cli"
+}
+
+check_kubectl_version
+
 well_known_dev_context_regexes=(docker-for-desktop minikube gke.*setup-dev.*)
 
 current_context="$(kubectl config current-context)"
