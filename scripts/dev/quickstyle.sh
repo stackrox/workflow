@@ -25,6 +25,10 @@ IFS=$'\n' read -d '' -r -a changed_files < <(
 		echo "$generated_files" ; echo "$generated_files"
 	} | sort | uniq -u) || true
 
+if [[ -f "${gitroot}/go.mod" ]]; then
+	export GO111MODULE=on
+fi
+
 # Expected arguments:
 # 1. Program name (for printing)
 # 2. Filename regex.
