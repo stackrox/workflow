@@ -83,18 +83,27 @@ function gostyle() {
 		git ls-files -- "${gitroot}" | egrep '\bfix-blanks\.sh$'
 		git ls-files -- "${gitroot}" | egrep '\bimport_validate\.py$'
 	} | head -n 1)"
-	[[ -n "${blanks}" ]] || die "Couldn't find the script that implements make blanks. Is this repo supported by quickstyle?"
-	"${blanks}" "${gofiles[@]}" && (( status == 0 ))
-	status=$?
+	if [[ -x "${blanks}" ]]; then
+		"${blanks}" "${gofiles[@]}" && (( status == 0 ))
+		status=$?
+	else
+	    ewarn "Couldn't find the script that implements make blanks. Is this repo supported by quickstyle?"
+	fi
 
 	go_run_program "validateimports" '\b(crosspkg|validate)imports/verify\.go$' "${godirs[@]}" && (( status == 0 ))
 	status=$?
 
 	einfo "roxvet"
 	local rox_vet="$(go env GOPATH)/bin/roxvet"
-	[[ -x "${rox_vet}" ]] || go install "${gitroot}/tools/roxvet"
-	go vet -vettool "${rox_vet}" "${packages[@]}" && (( status == 0 ))
-	status=$?
+	if [[ ! -x "${rox_vet}" ]] && [[ -d "${gitroot}/tools/roxvet" ]]; then
+	    go install "${gitroot}/tools/roxvet"
+	fi
+	if [[ -x "${rox_vet}" ]]; then
+	    go vet -vettool "${rox_vet}" "${packages[@]}" && (( status == 0 ))
+	    status=$?
+	else
+	    ewarn "roxvet not found"
+	fi
 
 	einfo "staticcheck"
 	local staticcheck_bin
