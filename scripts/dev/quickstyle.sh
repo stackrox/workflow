@@ -12,6 +12,10 @@ source "$(dirname "$SCRIPT")/../../lib/common.sh"
 gitroot="$(git rev-parse --show-toplevel)"
 [[ $? -eq 0 ]] || die "Current directory is not a git repository."
 
+if [[ -f "${gitroot}/go.mod" ]]; then
+	export GO111MODULE=on
+fi
+
 diffbase="$(git merge-base HEAD origin/master)"
 [[ $? -eq 0 ]] || die "Failed to determine diffbase"
 
