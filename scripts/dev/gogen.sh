@@ -9,7 +9,23 @@ source "$(dirname "$SCRIPT")/../../lib/common.sh"
 
 gitroot="$(git rev-parse --show-toplevel)"
 
-target_dir="${1:-.}"
+if [[ -f "${gitroot}/go.mod" ]]; then
+  export GO111MODULE=on
+fi
 
-cd "$target_dir"
-PATH="$PATH:${gitroot}/tools/generate-helpers" go generate "./..."
+export PATH="$PATH:${gitroot}/tools/generate-helpers"
+
+private_gogen() {
+  target_dir=$1
+  echo "Generating for ${target_dir}"
+  ( cd "$target_dir" && go generate "./..." )
+}
+
+if [[ "$#" -eq 0 ]]; then
+  # Default argument is current working directory.
+  set -- .
+fi
+
+for dir in "$@"; do
+  private_gogen "${dir}"
+done
