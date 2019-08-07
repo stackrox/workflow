@@ -55,6 +55,9 @@ function gostyle() {
 		grep -v 'mocks/'
 	)
 	[[ "${#gofiles[@]}" == 0 ]] && return 0
+	IFS=$'\n' read -d '' -r -a godirs < <(
+		for f in "${gofiles[@]}"; do dirname "$f"; done |
+		sort | uniq)
 	einfo "Running go style checks..."
 	einfo "fmt"
 	gofmt -s -l -w "${gofiles[@]}"
@@ -63,13 +66,17 @@ function gostyle() {
 	goimports -w "${gofiles[@]}" && (( status == 0 ))
 	status=$?
 	einfo "lint"
-	IFS=$'\n' read -d '' -r -a godirs < <(
-		for f in "${gofiles[@]}"; do dirname "$f"; done |
-		sort | uniq)
-	for dir in "${godirs[@]}"; do
-		golint -set_exit_status "${dir}" && (( status == 0 ))
+	local lint_script
+	lint_script="$(git ls-files -- "${gitroot}" | egrep '\bgo-lint\.sh$' | head -n 1)"
+	if [[ -x "${lint_script}" ]]; then
+		"${lint_script}" "${gofiles[@]}" && (( status == 0 ))
 		status=$?
-	done
+	else
+		for dir in "${godirs[@]}"; do
+			golint -set_exit_status "${dir}" && (( status == 0 ))
+			status=$?
+		done
+	fi
 	einfo "vet"
 	local src_root="$(go env GOPATH)/src"
 	local packages
