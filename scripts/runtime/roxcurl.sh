@@ -4,11 +4,14 @@
 # don't supply a fully qualified URL, assumes that central is
 # port-forwarded to localhost:8000 or that ROX_BASE_URL is set.
 #
-# Uses ROX_AUTH_TOKEN for authentication. If not set,
+# Uses ROX_API_TOKEN for authentication. If not set,
 # it reads the default admin password from standard deploy.sh
 # in either deploy/openshift/central-deploy/password, if 
 # ROX_ORCHESTRATOR_PLATFORM is openshift or deploy/k8s/central-deploy/password
 # if unset or set of k8s
+#
+# For historical reasons, will consider ROX_AUTH_TOKEN if ROX_API_TOKEN is not set.
+# The latter is compatible with roxctl and preferred.
 #
 # Example usage: roxcurl v1/imageIntegrations
 
@@ -32,7 +35,8 @@ if [[ ! "$url" =~ ^https?:// ]]; then
 fi
 
 auth=()
-if [[ -z "${ROX_AUTH_TOKEN:-}" ]]; then
+token="${ROX_API_TOKEN:-${ROX_AUTH_TOKEN:-}}"
+if [[ -z "${token}" ]]; then
     if [[ -n "${ROX_ADMIN_PASSWORD:-}" ]]; then
         auth=(-u "admin:${ROX_ADMIN_PASSWORD}")
     else
@@ -50,7 +54,7 @@ if [[ -z "${ROX_AUTH_TOKEN:-}" ]]; then
         fi
     fi
 else
-    auth=(-H "Authorization: Bearer ${ROX_AUTH_TOKEN}")
+    auth=(-H "Authorization: Bearer ${token}")
 fi
 
 curl -sSk "${auth[@]}" "$url" "$@"
