@@ -16,7 +16,7 @@ check_kubectl_version() {
 
 check_kubectl_version
 
-well_known_dev_context_regexes=(docker-for-desktop minikube gke.*setup-dev.*)
+well_known_dev_context_regexes=(docker-desktop docker-for-desktop minikube gke.*setup-dev.*)
 
 current_context="$(kubectl config current-context)"
 
