@@ -52,7 +52,7 @@ fi
 
 if [[ "${current_context}" == "docker-desktop" ]]; then
   einfo "On docker-desktop, deleting hostpath (if it exists)"
-  docker run --rm -it -v /:/vm-root alpine:edge rm -rf /var/lib/stackrox
+  docker run --rm -it -v /:/vm-root alpine:edge rm -rf /vm-root/var/lib/stackrox
 fi
 
 einfo "Teardown complete."
