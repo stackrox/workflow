@@ -17,8 +17,10 @@
 
 set -euo pipefail
 
-SCRIPT="$(python -c "import os; print(os.path.realpath('$0'))")"
-source "$(dirname "$SCRIPT")/../../lib/common.sh"
+pushd >/dev/null "$(dirname "$(python -c "import os; print(os.path.realpath('$0'))")")"
+source "../../lib/common.sh"
+source "../../lib/rox_password.sh"
+popd >/dev/null
 
 : ${ROX_BASE_URL:=https://localhost:8000}
 
@@ -45,19 +47,10 @@ if [[ -n "${ROX_AUTH_TOKEN:-}" ]]; then
 
 	target_url="${ROX_BASE_URL}/auth/response/generic#token=${ROX_AUTH_TOKEN}"
 else
-	if [[ -z "${ROX_ADMIN_PASSWORD:-}" ]]; then
-		: ${ROX_DIR:=${GOPATH?${HOME}/go}/src/github.com/stackrox/rox}
-
-		password_file="${ROX_DIR}/deploy/${ROX_ORCHESTRATOR_PLATFORM:-k8s}/central-deploy/password"
-		if [[ -f "${password_file}" ]]; then
-			ROX_ADMIN_PASSWORD="$(cat "${password_file}")"
-		fi
-	fi
-
-	[[ -n "${ROX_ADMIN_PASSWORD}" ]] || die "Could not determine admin password, and no explicit ROX_AUTH_TOKEN or ROX_ADMIN_PASSWORD set in the environment"
+	password="$(must_rox_admin_password)"
 
 	curl_status=0
-	target_url="$(curl -sSkf -u "admin:${ROX_ADMIN_PASSWORD}" -o /dev/null -w '%{redirect_url}' "${ROX_BASE_URL}/sso/providers/basic/4df1b98c-24ed-4073-a9ad-356aec6bb62d/challenge?micro_ts=0")" || curl_status=$?
+	target_url="$(curl -sSkf -u "admin:${password}" -o /dev/null -w '%{redirect_url}' "${ROX_BASE_URL}/sso/providers/basic/4df1b98c-24ed-4073-a9ad-356aec6bb62d/challenge?micro_ts=0")" || curl_status=$?
 	[[ "$curl_status" -eq 0 && -n "$target_url" ]] || die "Could not determine login URL for basic auth user"
 fi
 
