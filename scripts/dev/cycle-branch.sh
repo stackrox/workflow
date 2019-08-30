@@ -34,13 +34,8 @@ checkout_regex='^checkout: moving from ([^[:space:]]+) to ([^[:space:]]+)$'
 get_last_branches() {
 	n=$(($1 + 1))
 
-	last_branches=()
-
-	local current_branch
-	local current_branch_ref="$(git symbolic-ref HEAD 2>/dev/null)"
-	[[ "${current_branch_ref}" =~ ^refs/heads/(.*)$ ]] && current_branch="${BASH_REMATCH[1]}"
-
-	[[ -n "$current_branch" ]] && last_branches+=("$current_branch")
+	# This gets initialized with ("") if the current HEAD is not a branch, which is okay.
+	last_branches+=("$(get_current_branch 2>/dev/null)")
 
 	while [[ "${#last_branches[@]}" -lt "$n" ]] && IFS= read -r line; do
 		if [[ "$line" =~ $checkout_regex ]]; then
@@ -89,7 +84,6 @@ fi
 num="${1:-1}"
 read -d '' -r -a branches < <(get_last_branches "$num")
 
-status=0
 if (( checkout )); then
 	target_branch="${branches[${#branches[@]}-1]}"
 	git checkout "$target_branch" && exit 0
