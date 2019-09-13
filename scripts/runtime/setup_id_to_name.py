@@ -52,7 +52,7 @@ def get_value_to_print(context):
         req.raise_for_status()
         name = json.loads(req.text)["general"]["setupName"]
         sp_name = name.split()
-        return " ".join([n for n in sp_name if not n.startswith(":") and not n.endswith(":")])
+        return "[SETUP] " + " ".join([n for n in sp_name if not n.startswith(":") and not n.endswith(":")])
     except:
         # Any failure, just print the context
         return context
