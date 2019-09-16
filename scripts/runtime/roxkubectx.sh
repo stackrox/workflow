@@ -17,4 +17,6 @@ if [[ -n "${cached_context}" ]]; then
     exit 0
 fi
 
-"$(dirname "$SCRIPT")/setup_id_to_name.py" "${curr_context}" "${workfile_for_context}"
+python_interpreter="$(which python2 || which python)"
+[[ -n "{python_interpreter}" ]] || die "No Python interpreter found"
+"${python_interpreter}" "$(dirname "$SCRIPT")/setup_id_to_name.py" "${curr_context}" "${workfile_for_context}"
