@@ -11,7 +11,9 @@ curr_context="$(kubectl config current-context)"
 workfile_for_context="$(get_or_create_workfile kubectx)"
 [[ -n "${workfile_for_context}" ]] || die "Coudn't get workfile"
 
-cached_context="$(jq --arg context "${curr_context}" '.[$context] // empty' -r <"${workfile_for_context}")"
+if [[ -f "${workfile_for_context}" ]]; then
+    cached_context="$(jq --arg context "${curr_context}" '.[$context] // empty' -r <"${workfile_for_context}")"
+fi
 if [[ -n "${cached_context}" ]]; then
     echo "${cached_context}"
     exit 0
