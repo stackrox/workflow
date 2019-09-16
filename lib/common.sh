@@ -55,6 +55,13 @@ function workfile() {
   echo "$fullpath"
 }
 
+function get_or_create_workfile() {
+  local relpath="$1"
+  local fullpath="${ROX_WORKFLOW_WORKDIR}/${relpath}"
+  mkdir -p "$(dirname "${fullpath}")"
+  echo "${fullpath}"
+}
+
 function strip_comments() {
   sed 's@//.*$@@'
 }
