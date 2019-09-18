@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 import hmac
 from hashlib import sha1
@@ -11,14 +11,15 @@ import re
     
 context_name = sys.argv[1]
 
-KEY = 'stackrox!'
+KEY = b'stackrox!'
 ENCODED_KEY = 'stackrox%21'
 ORCHESTRATOR = 'Kubernetes/default/GKE'
 LIFESPAN = 43200
 
 
 def setupId2Hash(setup_id):
-    return hmac.new(KEY, setup_id, sha1).digest().encode("hex").rstrip('\n')
+    setup_id = bytes(setup_id, "utf-8")
+    return hmac.new(KEY, setup_id, sha1).hexdigest()
 
 def maybe_parse_context_to_setup_id(context):
     match = re.match(r'^.*setup-([^-]*)', context)
@@ -65,10 +66,10 @@ def main():
     if len(sys.argv) > 2:
         cache = load_workfile_contents(sys.argv[2])
     if context in cache:
-        print cache[context]
+        print (cache[context])
         return
     value_to_print = get_value_to_print(context)
-    print value_to_print
+    print (value_to_print)
     if len(sys.argv) > 2:
         cache[context] = value_to_print
         with open(sys.argv[2], 'w') as f:
