@@ -13,9 +13,6 @@ context_name = sys.argv[1]
 
 KEY = b'stackrox!'
 ENCODED_KEY = 'stackrox%21'
-ORCHESTRATOR = 'Kubernetes/default/GKE'
-LIFESPAN = 43200
-
 
 def setupId2Hash(setup_id):
     setup_id = bytes(setup_id, "utf-8")
