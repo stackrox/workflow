@@ -26,7 +26,7 @@ gitroot="$(git rev-parse --show-toplevel)"
 
 is_local_branch() {
 	local branch_name="$1"
-	[[ -s "${gitroot}/.git/refs/heads/${branch_name}" ]]
+	git rev-parse "refs/heads/${branch_name}" &>/dev/null
 }
 
 checkout_regex='^checkout: moving from ([^[:space:]]+) to ([^[:space:]]+)$'
@@ -35,11 +35,11 @@ get_last_branches() {
 	n=$(($1 + 1))
 
 	# This gets initialized with ("") if the current HEAD is not a branch, which is okay.
-	last_branches+=("$(get_current_branch 2>/dev/null)")
+	last_branches=("$(get_current_branch 2>/dev/null)")
 
 	while [[ "${#last_branches[@]}" -lt "$n" ]] && IFS= read -r line; do
 		if [[ "$line" =~ $checkout_regex ]]; then
-			target_ref="${BASH_REMATCH[2]}"
+			target_ref="${BASH_REMATCH[1]}"
 			if is_local_branch "$target_ref" && ! grep -qx "$target_ref" < <(printf '%s\n' "${last_branches[@]}"); then
 				last_branches+=("$target_ref")
 			fi
@@ -51,6 +51,11 @@ get_last_branches() {
 
 print_highlighted() {
 	last_branches=("$@")
+	num="${#last_branches[@]}"
+	num_width="${#num}"
+	for idx in ${!last_branches[@]}; do
+		last_branches[$idx]="$(printf "[%${num_width}d] %s" $((idx + 1)) "${last_branches[$idx]}")"
+	done
 	if [[ "${#last_branches[@]}" -gt 1 ]]; then
 		printf '%s\n' "${last_branches[@]::${#last_branches[@]}-1}"
 	fi
