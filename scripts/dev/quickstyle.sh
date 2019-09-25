@@ -59,11 +59,23 @@ function gostyle() {
 		for f in "${gofiles[@]}"; do dirname "$f"; done |
 		sort | uniq)
 	einfo "Running go style checks..."
-	einfo "fmt"
-	gofmt -s -l -w "${gofiles[@]}"
-	status=$?
 	einfo "imports"
-	goimports -w "${gofiles[@]}" && (( status == 0 ))
+	goimports -l -w "${gofiles[@]}"
+	status=$?
+	einfo "blanks"
+	local blanks
+	blanks="$({
+		git ls-files -- "${gitroot}" | egrep '\bfix-blanks\.sh$'
+		git ls-files -- "${gitroot}" | egrep '\bimport_validate\.py$'
+	} | head -n 1)"
+	if [[ -x "${blanks}" ]]; then
+		"${blanks}" "${gofiles[@]}" && (( status == 0 ))
+		status=$?
+	else
+	    ewarn "Couldn't find the script that implements make blanks. Is this repo supported by quickstyle?"
+	fi
+	einfo "fmt"
+	gofmt -s -l -w "${gofiles[@]}" && (( status == 0 ))
 	status=$?
 	einfo "lint"
 	local lint_script
@@ -88,18 +100,6 @@ function gostyle() {
 	fi
 	"${vet[@]}" "${packages[@]}" && (( status == 0 ))
 	status=$?
-	einfo "blanks"
-	local blanks
-	blanks="$({
-		git ls-files -- "${gitroot}" | egrep '\bfix-blanks\.sh$'
-		git ls-files -- "${gitroot}" | egrep '\bimport_validate\.py$'
-	} | head -n 1)"
-	if [[ -x "${blanks}" ]]; then
-		"${blanks}" "${gofiles[@]}" && (( status == 0 ))
-		status=$?
-	else
-	    ewarn "Couldn't find the script that implements make blanks. Is this repo supported by quickstyle?"
-	fi
 
 	go_run_program "validateimports" '\b(crosspkg|validate)imports/verify\.go$' "${godirs[@]}" && (( status == 0 ))
 	status=$?
