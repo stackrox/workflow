@@ -8,7 +8,7 @@ source "$(dirname "$SCRIPT")/../../lib/common.sh"
 port="$1"
 [[ -n "${port}" ]] || die "Usage: $0 <port>"
 
-pid="$(lsof -n -i tcp:"${port}" | grep kubectl | awk '{print $2}' | uniq)"
+pid="$(lsof -n -i "tcp:${port}" | grep kubectl | awk '{print $2}' | uniq)"
 [[ -n "${pid}" ]] || { einfo "No port-forward is running on port ${port}."; exit 0; }
 
 kill "${pid}" || die "Kill failed"
