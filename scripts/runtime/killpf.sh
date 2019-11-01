@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# killpf <port> kills a kubectl port-forward running on the passed port, if there is one.
+# killpf <port> kills a kubectl port-forward running on the passed port, if there is one. Note that it ONLY kills kubectl port-forwards, not arbtirary processes.
 
 SCRIPT="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
 source "$(dirname "$SCRIPT")/../../lib/common.sh"
@@ -9,7 +9,7 @@ port="$1"
 [[ -n "${port}" ]] || die "Usage: $0 <port>"
 
 pid="$(lsof -n -i "tcp:${port}" | grep kubectl | awk '{print $2}' | uniq)"
-[[ -n "${pid}" ]] || { einfo "No port-forward is running on port ${port}."; exit 0; }
+[[ -n "${pid}" ]] || { einfo "No kubectl port-forward is running on port ${port}."; exit 0; }
 
 kill "${pid}" || die "Kill failed"
 
