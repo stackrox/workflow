@@ -161,15 +161,17 @@ function circlecistyle() {
 
 [[ "${#changed_files[@]}" -eq 0 ]] && { ewarn "No relevant changed found in current directory."; exit 0; }
 
-gostyle "${changed_files[@]}"
-gostatus=$?
+status=0
 
-jsstyle "${changed_files[@]}"
-jsstatus=$?
+gostyle "${changed_files[@]}" && (( status == 0 ))
+status=$?
 
-circlecistyle "${changed_files[@]}"
-circlecistatus=$?
+jsstyle "${changed_files[@]}" && (( status == 0 ))
+status=$?
 
-[[ "${gostatus}" -eq 0 && "${jsstatus}" -eq 0 && "${circlecistatus}" -eq 0 ]] && exit 0
+circlecistyle "${changed_files[@]}" && (( status == 0 ))
+status=$?
+
+[[ "${status}" -eq 0 ]] && exit 0
 efatal "Style errors were found"
 exit 1
