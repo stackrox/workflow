@@ -149,7 +149,7 @@ function circlecistyle() {
 	if printf '%s\n' "${changed_files[@]}" | grep -qx "${gitroot}/.circleci/config.yml"; then
 		if [[ -x "$(command -v circleci)" ]]; then
 			einfo "Validating Circle config..."
-			circleci config validate "${gitroot}/.circleci/config.yml"
+			circleci config validate "${gitroot}/.circleci/config.yml" --skip-update-check
 			status=$?
 		else
 			ewarn "CircleCI config changed, but no local CircleCI CLI detected. Consider installing it to run validation."
