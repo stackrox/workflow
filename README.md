@@ -7,10 +7,10 @@ This repository is a collection of workflow scripts which (hopefully) boost Stac
 
 If you're not on Mac OS, or you prefer to do it manually, more detailed instructions follow.
 
-All the scripts are symlinked to in the `bin/` folder, so once you clone the repo, adding the `bin/` folder to your path will allow you to run them. If you're using the `bash` shell, the preferred way to do this is to source the `env.sh` script in every new session. Assuming this repository is checked out to `~/dev/src/bitbucket.org/stack-rox/workflow`, add the following line to your `~/.bash_profile` file:
+All the scripts are symlinked to in the `bin/` folder, so once you clone the repo, adding the `bin/` folder to your path will allow you to run them. If you're using the `bash` shell, the preferred way to do this is to source the `env.sh` script in every new session. Assuming this repository is checked out to `~/go/src/github.com/stackrox/workflow`, add the following line to your `~/.bash_profile` file:
 
 ```sh
-source ~/dev/src/bitbucket.org/stack-rox/workflow/env.sh
+source ~/go/src/github.com/stackrox/workflow/env.sh
 ```
 
 As an alternative, you can also just manually add the `bin/` folder to your path.
@@ -19,8 +19,7 @@ There is a `roxhelp` command. You can do `roxhelp --list-all` to see all command
 
 ## Config
 
-Some commands require you to have a config file. Copy the `workflow-config.json.example` file from this repo, and paste it in `~/.stackrox/workflow-config.json`; fill in all the fields. (Different commands will require different fields to be set; it's okay for you to not fill in the config entries for, say, Bitbucket, if you don't want to use the commands that require Bitbucket auth.)
+Some commands require you to have a config file. Copy the `workflow-config.json.example` file from this repo, and paste it in `~/.stackrox/workflow-config.json`; fill in all the fields. (Different commands will require different fields to be set; it's okay for you to not fill in the config entries for, say, Azure, if you don't want to use the commands that require Azure auth.)
 
 If you want to use commands that require GitHub auth, you can generate a token at https://github.com/settings/tokens and add it to the entry in your config.
 
-Note that you should NOT put in your actual Bitbucket password in the config file; instead, generate an app password following the instructions at https://confluence.atlassian.com/bitbucket/app-passwords-828781300.html, and add that to your config file.
