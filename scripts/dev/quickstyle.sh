@@ -138,7 +138,7 @@ function jsstyle() {
 	)
 	[[ "${#jsfiles[@]}" -eq 0 ]] && return 0
 	einfo "Running JS style checks..."
-	(cd "${gitroot}/ui" && yarn --silent eslint "${jsfiles[@]}" --fix)
+	(cd "${gitroot}/ui" && yarn --silent eslint "${jsfiles[@]}" --fix --quiet)
 	status=$?
 	return "${status}"
 }
