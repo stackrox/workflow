@@ -88,6 +88,11 @@ else
 	target_branch="$parent_branch"
 fi
 
+if [[ "${target_branch}" == "${parent_branch}" && "$(git rev-parse "${target_branch}")" == "$(git rev-parse "${old_base}^")" ]]; then
+	einfo "Branch is already based on top of up-to-date ${target_branch}"
+	exit 0
+fi
+
 einfo "Rebasing $current_branch onto $target_branch ..."
 
 git checkout --detach "$target_branch"
