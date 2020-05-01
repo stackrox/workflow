@@ -88,7 +88,7 @@ else
 	target_branch="$parent_branch"
 fi
 
-if [[ "$(git rev-parse "${target_branch}")" == "$(git rev-parse "${old_base}^")" ]]; then
+if [[ "${target_branch}" == "${parent_branch}" && "$(git rev-parse "${target_branch}")" == "$(git rev-parse "${old_base}^")" ]]; then
 	einfo "Already based on top of ${target_branch}"
 	exit 0
 fi
