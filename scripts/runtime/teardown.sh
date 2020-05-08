@@ -36,9 +36,9 @@ fi
 kubectl -n stackrox delete --grace-period=0 --force deploy/central deploy/sensor ds/collector deploy/monitoring
 kubectl -n stackrox get application -o name | xargs kubectl -n stackrox delete --wait
 #
-kubectl -n stackrox get cm,deploy,ds,hpa,networkpolicy,secret,svc,serviceaccount,validatingwebhookconfiguration -o name | xargs kubectl -n stackrox delete --wait
-# Only delete RBAC/PSP-related resources that contain "stackrox"
-kubectl -n stackrox get clusterrole,clusterrolebinding,role,rolebinding,psp -o name | grep stackrox | xargs kubectl -n stackrox delete --wait
+kubectl -n stackrox get cm,deploy,ds,hpa,networkpolicy,role,rolebinding,secret,svc,serviceaccount,validatingwebhookconfiguration -o name | xargs kubectl -n stackrox delete --wait
+# Only delete cluster-wide RBAC/PSP-related resources that contain "stackrox"
+kubectl -n stackrox get clusterrole,clusterrolebinding,psp -o name | grep stackrox | xargs kubectl -n stackrox delete --wait
 
 ## DO NOT RUN THIS IN A CUSTOMER ENVIRONMENT, IT WILL DELETE ALL THEIR DATA
 ## AND THEY WILL NEVER TALK TO US AGAIN.
