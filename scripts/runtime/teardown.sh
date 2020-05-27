@@ -8,8 +8,10 @@ source "$(dirname "$SCRIPT")/../../lib/common.sh"
 check_kubectl_version() {
   local major_version
   major_version="$(kubectl version -o json --client | jq '.clientVersion.major // empty' -r)"
+  major_version="${major_version%+}"
   local minor_version
   minor_version="$(kubectl version -o json --client | jq '.clientVersion.minor // empty' -r)"
+  minor_version="${minor_version%+}"
   [[ -n "${major_version}" && -n "${minor_version}" ]] || die "Couldn't check kubectl version"
   (( major_version > 1 || minor_version > 12 )) || die "You need to upgrade your kubectl for this to work. If on Mac OS, run { brew install kubernetes-cli || brew upgrade kubernetes-cli; } && brew link --overwrite kubernetes-cli"
 }
@@ -32,17 +34,23 @@ if (( ! matched )); then
   yes_no_prompt "Detected that you're connected to cluster ${current_context}, which is not a well-known dev environment. Are you sure you want to proceed with the teardown?" || { eecho "Exiting as requested"; exit 1; }
 fi
 
+# Collect all stackrox PVs before we delete the respective PVCs.
+IFS=$'\n' read -d '' -r -a stackrox_pvs < <(
+  kubectl get pv -o json | jq -r '.items[] | select(.spec.claimRef.namespace == "stackrox") | .metadata.name'
+)
+
 # Delete deployments quickly. If we add a new deployment and forget to add it here, it'll get caught in the next line anyway.
 kubectl -n stackrox delete --grace-period=0 --force deploy/central deploy/sensor ds/collector deploy/monitoring
 kubectl -n stackrox get application -o name | xargs kubectl -n stackrox delete --wait
-#
-kubectl -n stackrox get cm,deploy,ds,hpa,networkpolicy,role,rolebinding,secret,svc,serviceaccount,validatingwebhookconfiguration -o name | xargs kubectl -n stackrox delete --wait
-# Only delete cluster-wide RBAC/PSP-related resources that contain "stackrox"
-kubectl -n stackrox get clusterrole,clusterrolebinding,psp -o name | grep stackrox | xargs kubectl -n stackrox delete --wait
+# DO NOT ADD ANY NON-NAMESPACED RESOURCES TO THIS LIST, OTHERWISE ALL RESOURCES IN THE CLUSTER OF THAT TYPE
+# WILL BE DELETED!
+kubectl -n stackrox get cm,deploy,ds,hpa,networkpolicy,role,rolebinding,secret,svc,serviceaccount,pvc -o name | xargs kubectl -n stackrox delete --wait
+# Only delete cluster-wide RBAC/PSP-related resources that contain have the app.kubernetes.io/name=stackrox label.
+kubectl -n stackrox get clusterrole,clusterrolebinding,psp,validatingwebhookconfiguration -o name -l app.kubernetes.io/name=stackrox | xargs kubectl -n stackrox delete --wait
 
 ## DO NOT RUN THIS IN A CUSTOMER ENVIRONMENT, IT WILL DELETE ALL THEIR DATA
 ## AND THEY WILL NEVER TALK TO US AGAIN.
-kubectl -n stackrox get pv,pvc -o name | xargs kubectl -n stackrox delete --wait
+[[ "${#stackrox_pvs[@]}" == 0 ]] || kubectl delete --wait pv "${stackrox_pvs[@]}"
 
 if kubectl api-versions | grep -q openshift.io; then
   for scc in central monitoring scanner sensor; do
