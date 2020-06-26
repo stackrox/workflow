@@ -74,6 +74,14 @@ function gostyle() {
 	else
 	    ewarn "Couldn't find the script that implements make blanks. Is this repo supported by quickstyle?"
 	fi
+	if [[ -f "${gitroot}/.golangci.yml" ]]; then
+		einfo "golangci-lint"
+		if [[ -x "$(which golangci-lint)" ]]; then
+			golangci-lint run "${godirs[@]}" --fix
+		else
+			ewarn "No golangci-lint binary found, but the repo has a config file. Skipping..."
+		fi
+	fi
 	einfo "fmt"
 	gofmt -s -l -w "${gofiles[@]}" && (( status == 0 ))
 	status=$?
