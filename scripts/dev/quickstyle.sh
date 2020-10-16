@@ -142,7 +142,7 @@ function jsstyle() {
 	local status
 	IFS=$'\n' read -d '' -r -a jsfiles < <(
 		printf '%s\n' "${changed_files[@]}" |
-		grep "${gitroot}/ui/.*(js|tsx|ts)$"
+		egrep "${gitroot}/ui/.*(js|tsx|ts)$"
 	)
 	[[ "${#jsfiles[@]}" -eq 0 ]] && return 0
 	einfo "Running JS style checks..."
