@@ -3,6 +3,7 @@
 SCRIPT="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
 source "$(dirname "$SCRIPT")/../lib/common.sh"
 source "$(dirname "$SCRIPT")/../lib/shell_config.sh"
+source "$(dirname "$SCRIPT")/../setup/packages.sh"
 
 einfo "Checking for Homebrew ..."
 if [[ ! -x "$(command -v brew)" ]]; then
@@ -14,13 +15,11 @@ else
 	einfo "Found Homebrew."
 fi
 
-packages=(jq)
-
 einfo "Installing missing packages, if any ..."
 IFS=$'\n' read -d '' -r -a missing_packages < <(
 	{
-		brew ls --versions "${packages[@]}" | awk '{print$1}'
-		printf "%s\n" "${packages[@]}"
+		brew ls --versions "${REQUIRED_PACKAGES[@]}" | awk '{print$1}'
+		printf "%s\n" "${REQUIRED_PACKAGES[@]}"
 	} | sort | uniq -u
 )
 status=0
