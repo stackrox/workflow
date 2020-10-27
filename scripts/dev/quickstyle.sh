@@ -7,7 +7,9 @@
 
 SCRIPT="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
 source "$(dirname "$SCRIPT")/../../lib/common.sh"
+source "$(dirname "$SCRIPT")/../../setup/packages.sh"
 
+check_dependencies
 
 gitroot="$(git rev-parse --show-toplevel)"
 [[ $? -eq 0 ]] || die "Current directory is not a git repository."
@@ -39,14 +41,19 @@ function go_run_program() {
   shift
   local filename_regex=$1
   shift
-  local godirs=("$@")
+  local godirs
+  godirs=("$@")
   local program="$(git ls-files -- "${gitroot}" | egrep "${filename_regex}" | head -n 1)"
   [[ -n "${program}" ]] || { ewarn "Couldn't find program ${filename_regex}"; return; }
-  go run "${program}" $(go list "${godirs[@]}")
+
+  # Parse go dirs into array because go list expects an array
+  local go_packages=()
+  IFS=$'\n' read -d '' -r -a go_packages < <(go list "${godirs[@]}")
+  go run "${program}" "${go_packages[@]}"
 }
 
 function gostyle() {
-	local status
+	local status=0
 	local changed_files=("$@")
 	local gofiles
 	IFS=$'\n' read -d '' -r -a gofiles < <(
@@ -58,10 +65,24 @@ function gostyle() {
 	IFS=$'\n' read -d '' -r -a godirs < <(
 		for f in "${gofiles[@]}"; do dirname "$f"; done |
 		sort | uniq)
+
 	einfo "Running go style checks..."
-	einfo "imports"
-	goimports -l -w "${gofiles[@]}"
-	status=$?
+	if [[ -f "${gitroot}/.golangci.yml" ]]; then
+		einfo "golangci-lint"
+		if [[ -x "$(which golangci-lint)" ]]; then
+			golangci-lint run "${godirs[@]}" --fix && (( status == 0 ))
+			status=$?
+		else
+			ewarn "No golangci-lint binary found, but the repo has a config file. Skipping..."
+		fi
+	fi
+
+	if ! golangci_linter_enabled 'goimports'; then
+		einfo "imports"
+		goimports -l -w "${gofiles[@]}" && (( status == 0 ))
+		status=$?
+	fi
+
 	einfo "blanks"
 	local blanks
 	blanks="$({
@@ -74,40 +95,36 @@ function gostyle() {
 	else
 	    ewarn "Couldn't find the script that implements make blanks. Is this repo supported by quickstyle?"
 	fi
-	if [[ -f "${gitroot}/.golangci.yml" ]]; then
-		einfo "golangci-lint"
-		if [[ -x "$(which golangci-lint)" ]]; then
-			golangci-lint run "${godirs[@]}" --fix
+
+	if ! golangci_linter_enabled 'gofmt'; then
+		einfo "fmt"
+		gofmt -s -l -w "${gofiles[@]}" && (( status == 0 ))
+		status=$?
+	fi
+
+	if ! golangci_linter_enabled 'golint'; then
+		einfo "lint"
+		local lint_script
+		lint_script="$(git ls-files -- "${gitroot}" | egrep '\bgo-lint\.sh$' | head -n 1)"
+		if [[ -x "${lint_script}" ]]; then
+			"${lint_script}" "${gofiles[@]}" && (( status == 0 ))
+			status=$?
 		else
-			ewarn "No golangci-lint binary found, but the repo has a config file. Skipping..."
+			for dir in "${godirs[@]}"; do
+				golint -set_exit_status "${dir}" && (( status == 0 ))
+				status=$?
+			done
 		fi
 	fi
-	einfo "fmt"
-	gofmt -s -l -w "${gofiles[@]}" && (( status == 0 ))
-	status=$?
-	einfo "lint"
-	local lint_script
-	lint_script="$(git ls-files -- "${gitroot}" | egrep '\bgo-lint\.sh$' | head -n 1)"
-	if [[ -x "${lint_script}" ]]; then
-		"${lint_script}" "${gofiles[@]}" && (( status == 0 ))
+	if ! golangci_linter_enabled 'govet'; then
+		einfo "vet"
+		vet="$(git ls-files -- "${gitroot}" | egrep '\bgo-vet\.sh$' | head -n 1)"
+		if [[ ! -x "${vet}" ]]; then
+			vet=(go vet)
+		fi
+		"${vet[@]}" "${godirs[@]}" && (( status == 0 ))
 		status=$?
-	else
-		for dir in "${godirs[@]}"; do
-			golint -set_exit_status "${dir}" && (( status == 0 ))
-			status=$?
-		done
 	fi
-	einfo "vet"
-	local src_root="$(go env GOPATH)/src"
-	local packages
-	packages=($(printf '%s\n' "${godirs[@]}" | sed -e "s@^${src_root}/@@"))
-
-	vet="$(git ls-files -- "${gitroot}" | egrep '\bgo-vet\.sh$' | head -n 1)"
-	if [[ ! -x "${vet}" ]]; then
-		vet=(go vet)
-	fi
-	"${vet[@]}" "${packages[@]}" && (( status == 0 ))
-	status=$?
 
 	go_run_program "validateimports" '\b(crosspkg|validate)imports/verify\.go$' "${godirs[@]}" && (( status == 0 ))
 	status=$?
@@ -118,7 +135,7 @@ function gostyle() {
 	    go install "${gitroot}/tools/roxvet"
 	fi
 	if [[ -x "${rox_vet}" ]]; then
-	    go vet -vettool "${rox_vet}" "${packages[@]}" && (( status == 0 ))
+	    go vet -vettool "${rox_vet}" "${godirs[@]}" && (( status == 0 ))
 	    status=$?
 	else
 	    ewarn "roxvet not found"
@@ -128,13 +145,25 @@ function gostyle() {
 	local staticcheck_bin
 	staticcheck_bin="$(git ls-files -- "${gitroot}" | egrep '\bstaticcheck-wrap.sh$')"
 	if [[ -x "${staticcheck_bin}" ]]; then
-		"${staticcheck_bin}" "${packages[@]}" && (( status == 0 ))
+		"${staticcheck_bin}" "${godirs[@]}" && (( status == 0 ))
 		status=$?
 	else
 		ewarn "Skipping staticcheck, doesn't appear to be supported in the repo."
 	fi
 
 	return $status
+}
+
+function golangci_linter_enabled() {
+  if [[ ! -x "$(command -v "golangci-lint")" ]]; then
+    return 1
+  fi
+
+  local linter
+  local enabled_linters
+  linter="${1}"
+  enabled_linters="$(yq r --stripComments "${gitroot}"/.golangci.yml linters.enable | sed "s/- //g")"
+  printf '%s\n' "${enabled_linters[@]}" | grep -qx "^${linter}$"
 }
 
 function jsstyle() {
