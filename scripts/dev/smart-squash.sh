@@ -39,7 +39,7 @@ commit_msg_contents="$(cat "${commit_msg_file}")"
 printf '%s\n\n%s\n' "X-Smart-Squash: Squashed ${effective_num_commits} commits:" "${commit_msg_contents}" >"${commit_msg_file}"
 
 git reset --soft "$marker_commit"
-git commit -F "$commit_msg_file"
+git commit --no-verify -F "$commit_msg_file"
 rm -f "$commit_msg_file"
 
 einfo "Squashed ${num_commits} onto ${marker_commit}."

@@ -34,7 +34,7 @@ if ! git diff-index --quiet HEAD; then
 	stashed=1
 fi
 
-git commit --allow-empty -m "X-Smart-Branch-Parent: $parent_branch"
+git commit --no-verify --allow-empty -m "X-Smart-Branch-Parent: $parent_branch"
 
 if (( stashed == 1 )); then
 	einfo "Restoring stashed changes ..."
