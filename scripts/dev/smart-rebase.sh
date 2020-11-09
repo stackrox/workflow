@@ -40,7 +40,7 @@ if [[ -z "$match" ]]; then
 		yes_no_prompt "Continue?" || die "Aborted."
 	fi
 	git checkout --detach "$merge_base" || die "Failed to check out merge base $merge_base"
-	git commit --allow-empty -m "X-Smart-Branch-Parent: $target_branch" || die "Could not insert branch parent marker"
+	git commit --no-verify --allow-empty -m "X-Smart-Branch-Parent: $target_branch" || die "Could not insert branch parent marker"
 	marker="$(git rev-parse HEAD)"
 	git checkout "$current_branch"
 	git rebase --onto "$marker" "$rebase_base" "$current_branch" || die "Rebasing failed. This should not happen!"
@@ -67,7 +67,7 @@ if [[ -n "$target_branch" && "$target_branch" != "$parent_branch" ]]; then
 		# Simple case: the old base is now part of the history of target branch.
 		# Only mark branch as parent, but do not rebase.
 		git checkout --detach "$old_base"
-		git commit --allow-empty -m "X-Smart-Branch-Parent: ${target_branch}"
+		git commit --no-verify --allow-empty -m "X-Smart-Branch-Parent: ${target_branch}"
 		new_marker="$(git rev-parse HEAD)"
 		git rebase --onto "$new_marker" "$first_commit" "$current_branch" || die "Rebase failed."
 		einfo "Marked $target_branch as the branch parent of $current_branch."
@@ -96,7 +96,7 @@ fi
 einfo "Rebasing $current_branch onto $target_branch ..."
 
 git checkout --detach "$target_branch"
-git commit --allow-empty -m "X-Smart-Branch-Parent: ${target_branch}"
+git commit --no-verify --allow-empty -m "X-Smart-Branch-Parent: ${target_branch}"
 
 new_base="$(git rev-parse HEAD)"
 
