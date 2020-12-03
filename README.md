@@ -27,7 +27,6 @@ As an alternative, you can also just manually add the `bin/` folder to your path
 
 ## Commands
 
-<!--- roxhelp-start -->
 ```
 $ roxhelp --list-all
 checkout-pr - Checks out the branch given the PR number.
@@ -50,11 +49,11 @@ roxcurl - Curls StackRox central at the endpoint specified. If you
 roxhelp - Prints the help message for a Rox workflow command.
 roxkubectx - A `kubectl config current-context` wrapper that is aware of setup names.
 smart-branch - Usage: smart-branch (creates and checks out a new branch with marker commits to allow working on multiple dependend branches)
+smart-diff - Produces git diff relative to the last smart-branch commit.
 smart-rebase - Usage: smart-rebase (given a branch name it rebases multiple dependend branches)
 smart-squash - Usage: smart-squash (squashes commits only until the first parent branch marker)
 teardown - Tears down a running StackRox installation very quickly, and makes sure no resources we create are left running around.
 ```
-<!--- roxhelp-end -->
 
 ## Config
 
