@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+#Usage: smart-rebase (given a branch name it rebases multiple dependend branches)
+
 SCRIPT="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
 source "$(dirname "$SCRIPT")/../../lib/git.sh"
 
