@@ -1,9 +1,19 @@
 # Workflow
 This repository is a collection of workflow scripts which (hopefully) boost StackRox engineers' productivity. It has scripts for common tasks that need to be executed frequently, and aims to make them simple.
 
-## How To Use
+## Installation
 
-(Mac OS only): Cloning the repo and executing `setup.sh` will automagically do everything you need to set this up. Simply follow the prompts on-screen.
+### MacOS
+
+```
+$ mkdir -p $GOPATH/src/github.com/stackrox
+$ cd $GOPATH/src/github.com/stackrox
+$ git clone git@github.com:stackrox/workflow
+$ cd workflow
+$ ./setup.sh
+```
+
+### Manual installation
 
 If you're not on Mac OS, or you prefer to do it manually, more detailed instructions follow.
 
@@ -15,11 +25,42 @@ source ~/go/src/github.com/stackrox/workflow/env.sh
 
 As an alternative, you can also just manually add the `bin/` folder to your path.
 
-There is a `roxhelp` command. You can do `roxhelp --list-all` to see all commands, and `roxhelp <command-name>` to see more about a particular command.
+## Commands
+
+```
+$ roxhelp --list-all
+checkout-pr - Checks out the branch given the PR number.
+cycle-branch - Cycles through recently checked out branches.
+gcdown - Brings down the GCP dev VM.
+gcmosh - Establishes an interactive session to the (running) GCP Dev VM instance via mosh
+gcscp - Performs a copy via SSH connection to/from the (running) GCP dev VM.
+gcssh - Establishes an SSH connection to the (running) GCP Dev VM instance.
+gcup - Brings up the GCP dev VM.
+getcreds - Imports credentials for a cluster from setup and creates RBAC role bindings.
+getprnumber - Gets the PR number corresponding to the current checked out branch.
+gogen - Runs go generate rooted at the current working directory (or a directory specified as the first
+killpf - killpf <port> kills a kubectl port-forward running on the passed port, if there is one. Note that it ONLY kills kubectl port-forwards, not arbtirary processes.
+logmein - Opens a browser, logging you in as the same user that `roxcurl` uses.
+openbranch - Opens the web page corresponding to the currently checked-out branch of the repo you're in.
+openjira - Opens the web page corresponding to the JIRA ticket for the branch you're on.
+openpr - Opens the web page corresponding to the Pull Request for the currently checked-out branch of the repo you're in.
+quickstyle - Runs style targets for all Go/JS files that have changed between the current code and master.
+roxcurl - Curls StackRox central at the endpoint specified. If you
+roxhelp - Prints the help message for a Rox workflow command.
+roxkubectx - A `kubectl config current-context` wrapper that is aware of setup names.
+smart-branch - Usage: smart-branch (creates and checks out a new branch with marker commits to allow working on multiple dependend branches)
+smart-diff - Produces git diff relative to the last smart-branch commit.
+smart-rebase - Usage: smart-rebase (given a branch name it rebases multiple dependend branches)
+smart-squash - Usage: smart-squash (squashes commits only until the first parent branch marker)
+teardown - Tears down a running StackRox installation very quickly, and makes sure no resources we create are left running around.
+```
 
 ## Config
 
-Some commands require you to have a config file. Copy the `workflow-config.json.example` file from this repo, and paste it in `~/.stackrox/workflow-config.json`; fill in all the fields. (Different commands will require different fields to be set; it's okay for you to not fill in the config entries for, say, Azure, if you don't want to use the commands that require Azure auth.)
+Some commands require you to have a config file. Copy the `workflow-config.json.example` file from this repo,
+and paste it in `~/.stackrox/workflow-config.json`; fill in all the fields.
+(Different commands will require different fields to be set; it's okay for you to not fill in the config entries for,
+say, Azure, if you don't want to use the commands that require Azure auth.)
 
 If you want to use commands that require GitHub auth, you can generate a token at https://github.com/settings/tokens and add it to the entry in your config.
 
