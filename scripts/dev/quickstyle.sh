@@ -209,7 +209,7 @@ function circlecistyle() {
 
 }
 
-[[ "${#changed_files[@]}" -eq 0 ]] && { ewarn "No relevant changed found in current directory."; exit 0; }
+[[ "${#changed_files[@]}" -eq 0 ]] && { ewarn "No relevant changes found in current directory."; exit 0; }
 
 status=0
 
