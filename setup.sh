@@ -1,7 +1,17 @@
 #!/usr/bin/env bash
+set -eo pipefail
 
 SCRIPT="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
 source "$(dirname "$SCRIPT")/lib/common.sh"
+
+einfo "Check pip installation, using ${PYTHON_INTERPRETER}"
+if ! "${PYTHON_INTERPRETER}" -m pip --version &> /dev/null; then
+  einfo "Pip not found, installing pip"
+  "${PYTHON_INTERPRETER}" -m ensurepip
+fi
+
+einfo "Installing python packages"
+"${PYTHON_INTERPRETER}" -m pip install -r "$(dirname "${SCRIPT}")/requirements.txt"
 
 platform="$(uname)"
 

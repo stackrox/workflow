@@ -3,6 +3,7 @@
 CONFIG_FILE="$HOME/.stackrox/workflow-config.json"
 
 ROX_WORKFLOW_WORKDIR="$HOME/.roxworkflow-workdir"
+PYTHON_INTERPRETER="$(which python3 || which python)"
 
 bold="$(tput bold)"
 reset="$(tput sgr0)"
