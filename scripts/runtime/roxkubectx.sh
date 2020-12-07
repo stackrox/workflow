@@ -19,6 +19,5 @@ if [[ -n "${cached_context}" ]]; then
     exit 0
 fi
 
-python_interpreter="$(which python3 || which python)"
-[[ -n "{python_interpreter}" ]] || die "No Python interpreter found"
-"${python_interpreter}" "$(dirname "$SCRIPT")/setup_id_to_name.py" "${curr_context}" "${workfile_for_context}"
+[[ -n "{PYTHON_INTERPRETER}" ]] || die "No Python interpreter found"
+"${PYTHON_INTERPRETER}" "$(dirname "$SCRIPT")/setup_id_to_name.py" "${curr_context}" "${workfile_for_context}"
