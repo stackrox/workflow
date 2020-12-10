@@ -48,6 +48,7 @@ quickstyle - Runs style targets for all Go/JS files that have changed between th
 roxcurl - Curls StackRox central at the endpoint specified. If you
 roxhelp - Prints the help message for a Rox workflow command.
 roxkubectx - A `kubectl config current-context` wrapper that is aware of setup names.
+roxlatestimage - Get the last docker image which is available locally for a given service.
 smart-branch - Usage: smart-branch (creates and checks out a new branch with marker commits to allow working on multiple dependend branches)
 smart-diff - Produces git diff relative to the last smart-branch commit.
 smart-rebase - Usage: smart-rebase (given a branch name it rebases multiple dependend branches)
