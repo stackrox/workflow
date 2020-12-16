@@ -17,12 +17,15 @@ if [ -z "$1" ]; then
   image="main"
 fi
 
-format=$2
+format="{{.Repository}}:{{.Tag}} ${2}"
 if [[ "$2" == "--since" ]]; then
-  format="\t {{.CreatedSince}}"
+  format="{{.Repository}}:{{.Tag}}\t {{.CreatedSince}}"
+fi
+if [[ "$2" == "--tag" ]]; then
+  format="{{.Tag}}"
 fi
 
-result=$(docker images --filter="reference=stackrox/$image" --format "{{.Repository}}:{{.Tag}} ${format}" | head -1)
+result=$(docker images --filter="reference=stackrox/$image" --format "${format}" | head -1)
 if [[ -z "$result" ]]; then
   >&2 echo "either '${image}' is an invalid image name, or the image has never been built locally."
   exit 1
