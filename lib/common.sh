@@ -56,8 +56,9 @@ function workfile() {
   echo "$fullpath"
 }
 
-function get_or_create_workfile() {
+function get_workfile_path_and_ensure_dir() {
   local relpath="$1"
+  [[ -n "${relpath}" ]] || return 1
   local fullpath="${ROX_WORKFLOW_WORKDIR}/${relpath}"
   mkdir -p "$(dirname "${fullpath}")"
   echo "${fullpath}"
