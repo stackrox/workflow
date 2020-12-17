@@ -9,23 +9,24 @@
 # 3.0.52.x-119-gdc18408bd7-dirty
 
 format_ref="{{.Repository}}:{{.Tag}}"
-image="main"
-
+image=""
 for arg in "$@"; do
   case "$arg" in
-  main|collector|docs|scanner|scanner-db|roxctl)
-    image="$arg"
-    shift
-    ;;
   --tag-only)
     format_ref="{{.Tag}}"
-    shift
     ;;
   *)
-    echo >&2 "Invalid argument $arg"
-    exit 1
+    if [[ -z "$image" ]]; then
+      image="$arg"
+    else # positional argument has already been seen
+      echo >&2 "Invalid argument $arg"
+      exit 1
+    fi
   esac
 done
+if [[ -z "$image" ]]; then
+  image="main"
+fi
 
 result="$(docker images --filter="reference=stackrox/$image" --format "${format_ref}" | head -1)"
 if [[ -z "$result" ]]; then
