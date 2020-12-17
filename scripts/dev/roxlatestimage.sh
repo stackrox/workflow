@@ -27,7 +27,7 @@ for arg in "$@"; do
   esac
 done
 
-result=$(docker images --filter="reference=stackrox/$image" --format "${format_ref}" | head -1)
+result="$(docker images --filter="reference=stackrox/$image" --format "${format_ref}" | head -1)"
 if [[ -z "$result" ]]; then
   >&2 echo "either '${image}' is an invalid image name, or the image has never been built locally."
   exit 1
