@@ -12,5 +12,5 @@ if [ -z "$1" ]; then
   image="main"
 fi
 
-"${DIR}"/roxlatestimage.sh "$image" --tag
+"${DIR}"/roxlatestimage.sh "$image" --tag-only
 

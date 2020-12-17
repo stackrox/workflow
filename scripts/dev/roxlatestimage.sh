@@ -5,27 +5,29 @@
 # roxlatestimage <SERVICE_NAME>
 #
 # Display time since build:
-# $ ./get-last-build.sh main --since
-# stackrox/main:3.0.52.x-119-gdc18408bd7-dirty 	 14 minutes ago
-#
-# Use custom formatting:
-# $ ./get-last-build.sh roxctl "\t {{.CreatedAt}} \t {{.ID}}"
-# stackrox/roxctl:3.0.52.x-91-g821f85d9b5 	 2020-12-07 11:49:54 +0100 CET 	 b4747e98e95c
+# $ ./get-last-build.sh main --tag-only
+# 3.0.52.x-119-gdc18408bd7-dirty
 
-image=$1
-if [ -z "$1" ]; then
-  image="main"
-fi
+format_ref="{{.Repository}}:{{.Tag}}"
+image="main"
 
-format="{{.Repository}}:{{.Tag}} ${2}"
-if [[ "$2" == "--since" ]]; then
-  format="{{.Repository}}:{{.Tag}}\t {{.CreatedSince}}"
-fi
-if [[ "$2" == "--tag" ]]; then
-  format="{{.Tag}}"
-fi
+for arg in "$@"; do
+  case "$arg" in
+  main|collector|docs|scanner|scanner-db|roxctl)
+    image="$arg"
+    shift
+    ;;
+  --tag-only)
+    format_ref="{{.Tag}}"
+    shift
+    ;;
+  *)
+    echo >&2 "Invalid argument $arg"
+    exit 1
+  esac
+done
 
-result=$(docker images --filter="reference=stackrox/$image" --format "${format}" | head -1)
+result=$(docker images --filter="reference=stackrox/$image" --format "${format_ref}" | head -1)
 if [[ -z "$result" ]]; then
   >&2 echo "either '${image}' is an invalid image name, or the image has never been built locally."
   exit 1
