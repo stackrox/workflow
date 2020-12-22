@@ -8,7 +8,7 @@ source "$(dirname "$SCRIPT")/../../lib/common.sh"
 curr_context="$(kubectl config current-context)"
 [[ -n "${curr_context}" ]] || die "Couldn't determine current context"
 
-workfile_for_context="$(get_or_create_workfile kubectx)"
+workfile_for_context="$(get_workfile_path_and_ensure_dir kubectx)"
 [[ -n "${workfile_for_context}" ]] || die "Coudn't get workfile"
 
 if [[ -f "${workfile_for_context}" ]]; then
