@@ -225,19 +225,18 @@ IFS=$'\n' read -d '' -r -a all_changed_files < <(
 
 [[ "${#all_changed_files[@]}" -eq 0 ]] && { ewarn "No relevant changes found in current directory."; exit 0; }
 
-cache_file_rel_dir="quickstyle/$(echo "${gitroot}"| tr '/' '_')"  # The workfile is specific to the current repo
+cache_file_rel_dir="quickstyle/$(echo "${gitroot}" | tr '/' '_')"  # The workfile is specific to the current repo
 cache_path="$(get_workfile_path_and_ensure_dir "${cache_file_rel_dir}")"
 [[ -n "${cache_path}" ]] || die "Couldn't set up cache file"
 
+# If the cache path is empty, just create an empty file so the below code
+# can handle it correctly.
+[[ -f "${cache_path}" ]] || echo > "${cache_path}"
+
 filtered_changed_files=()
 
-while read -r cache_line ; do
-  if ! grep -qx "${cache_line}" "${cache_path}" 2>/dev/null; then
-    # This line is not cached -- so either the file was not in the cache, or its hash has changed.
-    # Note that this naturally handles the case where there is no cache file.
-    filtered_changed_files+=("$(awk -F'\t' '{print $1}' <<<"${cache_line}")")
-  fi
-done < <(get_files_and_hashes "${all_changed_files[@]}")
+IFS=$'\n' read -d '' -r -a filtered_changed_files < <(
+  comm -13 <(sort <"${cache_path}") <(get_files_and_hashes "${all_changed_files[@]}" | sort) | awk -F'\t' '{print$1}')
 
 einfo "${#all_changed_files[@]} files changed from ${main_branch}, ${#filtered_changed_files[@]} changed since the last successful quickstyle run."
 [[ "${#filtered_changed_files[@]}" -eq 0 ]] && { einfo "Exiting since all changed files have already been checked."; exit 0; }
