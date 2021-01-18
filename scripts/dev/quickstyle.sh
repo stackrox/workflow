@@ -150,7 +150,15 @@ function golangci_linter_enabled() {
   local linter
   local enabled_linters
   linter="${1}"
-  enabled_linters="$(yq r --stripComments "${gitroot}"/.golangci.yml linters.enable | sed "s/- //g")"
+  currentver="$(yq --version | cut -d' ' -f3)"
+  requiredver="4.0.0"
+  if [ "$(printf '%s\n' "$requiredver" "$currentver" | sort -V | head -n1)" = "$requiredver" ]; then 
+    enabled_linters="$(yq eval '.linters.enable | ... comments=""' "${gitroot}"/.golangci.yml | sed "s/- //g")"
+  else
+    einfo "You are using yq < 4.0.0, consider upgrading"
+    enabled_linters="$(yq r --stripComments "${gitroot}"/.golangci.yml linters.enable | sed "s/- //g")"
+
+  fi
   printf '%s\n' "${enabled_linters[@]}" | grep -qx "^${linter}$"
 }
 
