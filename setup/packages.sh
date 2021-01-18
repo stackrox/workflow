@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Determine yq version
+YQ_SYSTEM_VERSION="$(yq --version | cut -d' ' -f3)"
+
 # Dependent packages
 REQUIRED_PACKAGES=(yq jq)
 
