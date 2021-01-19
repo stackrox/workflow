@@ -1,10 +1,20 @@
 #!/usr/bin/env bash
 
-# Determine yq version
-YQ_SYSTEM_VERSION="$(yq --version | cut -d' ' -f3)"
 
 # Dependent packages
 REQUIRED_PACKAGES=(yq jq)
+
+
+function check_environment() {
+  # Determine yq version
+  YQ_SYSTEM_VERSION="$(yq --version | cut -d' ' -f3)"
+
+  local requiredver="4.0.0"  # yq 4 introduced breaking syntax changes
+  if [ "$(printf '%s\n' "$requiredver" "$YQ_SYSTEM_VERSION" | sort -V | head -n1)" != "$requiredver" ]; then 
+    einfo "You are using yq < 4.0.0, consider upgrading"
+  fi
+}
+
 
 function check_dependencies() {
   local missing
@@ -25,5 +35,6 @@ function check_dependencies() {
     efatal "Please run ${setup_path}"
     exit 1
   fi
-}
 
+  check_environment
+}

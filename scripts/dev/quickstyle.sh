@@ -154,7 +154,7 @@ function golangci_linter_enabled() {
   if [ "$(printf '%s\n' "$requiredver" "$YQ_SYSTEM_VERSION" | sort -V | head -n1)" = "$requiredver" ]; then 
     enabled_linters="$(yq eval '.linters.enable | ... comments=""' "${gitroot}"/.golangci.yml | sed "s/- //g")"
   else
-    einfo "You are using yq < 4.0.0, consider upgrading"
+    # einfo "You are using yq < 4.0.0, consider upgrading"
     enabled_linters="$(yq r --stripComments "${gitroot}"/.golangci.yml linters.enable | sed "s/- //g")"
 
   fi
