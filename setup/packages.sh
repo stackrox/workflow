@@ -4,13 +4,20 @@
 # Dependent packages
 REQUIRED_PACKAGES=(yq jq)
 
+# Expected arguments:
+# Required mayor version, e.g. 4.0.0
+function check_required_yq_version() {
+  # Determine yq version
+  local yq_system_version="$(yq --version | cut -d' ' -f3)"
+
+  # Check whether the running or the required version is
+  printf '%s\n%s\n' "$1" "$yq_system_version"  | sort -V -C
+}
+
 
 function check_environment() {
-  # Determine yq version
-  YQ_SYSTEM_VERSION="$(yq --version | cut -d' ' -f3)"
-
-  local requiredver="4.0.0"  # yq 4 introduced breaking syntax changes
-  if [ "$(printf '%s\n' "$requiredver" "$YQ_SYSTEM_VERSION" | sort -V | head -n1)" != "$requiredver" ]; then 
+  # yq 4 introduced breaking syntax changes
+  if ! check_required_yq_version "4.0.0"; then
     einfo "You are using yq < 4.0.0, consider upgrading"
   fi
 }
