@@ -154,7 +154,7 @@ function golangci_linter_enabled() {
   linter="${1}"
   
   # yq 4 introduced breaking syntax changes
-  if check_required_yq_version "4.0.0"; then
+  if check_min_required_yq_version "4.0.0"; then
     enabled_linters="$(yq eval '.linters.enable | ... comments=""' "${gitroot}"/.golangci.yml | sed "s/- //g")"
   else
     enabled_linters="$(yq r --stripComments "${gitroot}"/.golangci.yml linters.enable | sed "s/- //g")"
