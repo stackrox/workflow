@@ -9,6 +9,8 @@ SCRIPT="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BA
 source "$(dirname "$SCRIPT")/../../lib/common.sh"
 source "$(dirname "$SCRIPT")/../../setup/packages.sh"
 
+check_dependencies
+
 function newlinecheck() {
   local check_newlines
 	check_newlines="$(
@@ -150,7 +152,15 @@ function golangci_linter_enabled() {
   local linter
   local enabled_linters
   linter="${1}"
-  enabled_linters="$(yq r --stripComments "${gitroot}"/.golangci.yml linters.enable | sed "s/- //g")"
+  
+  # yq 4 introduced breaking syntax changes
+  if check_min_required_yq_version "4.0.0"; then
+    yaml_to_json=(yq eval -j)
+  else
+    yaml_to_json=(yq r -j)
+  fi
+  enabled_linters="$("${yaml_to_json[@]}" "${gitroot}/.golangci.yml" | jq -r '.linters.enable[]')"
+
   printf '%s\n' "${enabled_linters[@]}" | grep -qx "^${linter}$"
 }
 
@@ -195,9 +205,6 @@ function get_files_and_hashes() {
     fi
   done
 }
-
-
-check_dependencies
 
 gitroot="$(git rev-parse --show-toplevel)"
 [[ $? -eq 0 ]] || die "Current directory is not a git repository."
