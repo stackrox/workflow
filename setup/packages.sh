@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+source "$(dirname "$SCRIPT")/../../lib/common.sh"
 
 
 # Dependent packages

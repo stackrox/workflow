@@ -155,11 +155,12 @@ function golangci_linter_enabled() {
   
   # yq 4 introduced breaking syntax changes
   if check_min_required_yq_version "4.0.0"; then
-    enabled_linters="$(yq eval '.linters.enable | ... comments=""' "${gitroot}"/.golangci.yml | sed "s/- //g")"
+    yaml_to_json=(yq eval -j)
   else
-    enabled_linters="$(yq r --stripComments "${gitroot}"/.golangci.yml linters.enable | sed "s/- //g")"
-
+    yaml_to_json=(yq r -j)
   fi
+  enabled_linters="$("${yaml_to_json[@]}" "${gitroot}/.golangci.yml" | jq -r '.linters.enable[]')"
+
   printf '%s\n' "${enabled_linters[@]}" | grep -qx "^${linter}$"
 }
 
