@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-source "$(dirname "$SCRIPT")/../../lib/common.sh"
 
+PACKAGES_PATH="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")" 
+source "$(dirname "$PACKAGES_PATH")/../lib/common.sh"
 
 # Dependent packages
 REQUIRED_PACKAGES=(yq jq)
