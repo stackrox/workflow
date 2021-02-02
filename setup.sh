@@ -11,7 +11,7 @@ if ! "${PYTHON_INTERPRETER}" -m pip --version &> /dev/null; then
 fi
 
 einfo "Installing python packages"
-"${PYTHON_INTERPRETER}" -m pip install -r "$(dirname "${SCRIPT}")/requirements.txt"
+"${PYTHON_INTERPRETER}" -m pip install --user -r "$(dirname "${SCRIPT}")/requirements.txt"
 
 platform="$(uname)"
 
