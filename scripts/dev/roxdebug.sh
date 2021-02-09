@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Starts dlv debugging session in running pod.
+# Run `roxdebug --help` to see its usage help.
 
 set -euo pipefail
 
@@ -13,7 +15,7 @@ function usage() {
   echo "                       Default port: $DEFAULT_PORT."
   echo "  -h, --help           This message."
   echo ""
-  echo "This command attaches dlv debugger to StackRox pod running debug build."
+  echo "This command attaches dlv debugger to StackRox pod. The pod image must be a debug build."
   echo "See https://github.com/stackrox/rox#debugging for complete instructions."
   if [[ -n "${1:-}" ]]; then
     echo ""
