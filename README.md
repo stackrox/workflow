@@ -46,6 +46,7 @@ openjira - Opens the web page corresponding to the JIRA ticket for the branch yo
 openpr - Opens the web page corresponding to the Pull Request for the currently checked-out branch of the repo you're in.
 quickstyle - Runs style targets for all Go/JS files that have changed between the current code and master.
 roxcurl - Curls StackRox central at the endpoint specified. If you
+roxdebug - Starts dlv debugging session in running pod.
 roxhelp - Prints the help message for a Rox workflow command.
 roxkubectx - A `kubectl config current-context` wrapper that is aware of setup names.
 roxlatestimage - Get the last docker image which is available locally for a given service.
