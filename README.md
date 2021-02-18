@@ -65,5 +65,5 @@ and paste it in `~/.stackrox/workflow-config.json`; fill in all the fields.
 (Different commands will require different fields to be set; it's okay for you to not fill in the config entries for,
 say, Azure, if you don't want to use the commands that require Azure auth.)
 
-If you want to use commands that require GitHub auth, you can generate a token at https://github.com/settings/tokens and add it to the entry in your config.
+If you want to use commands that require GitHub auth, you can generate a token at https://github.com/settings/tokens (it is used to list pull requests and branches, so give it `repo` scope) and add it to the entry in your config.
 
