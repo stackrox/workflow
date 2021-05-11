@@ -21,14 +21,15 @@ if [[ "$platform" == "Darwin" ]]; then
 fi
 
 if [[ "$platform" == "Linux" ]]; then
-  if [[ -f /etc/lsb-release ]]; then
-    distrib=$(env -i bash -c '. /etc/lsb-release && echo ${DISTRIB_ID}')
-    if [[ -n "$distrib" ]]; then
-      platform="$platform $distrib"
-    fi
-    if [[ "$distrib" == "Ubuntu" ]]; then
-      setup_script="ubuntu.sh"
-    fi
+  distrib=`${PYTHON_INTERPRETER} -c 'import platform;print(platform.linux_distribution()[0])'`
+  if [[ -n "$distrib" ]]; then
+    platform="$platform $distrib"
+  fi
+  if [[ "$distrib" == "Ubuntu" ]]; then
+    setup_script="ubuntu.sh"
+  fi
+  if [[ "$distrib" == "Red Hat Enterprise Linux" ]]; then
+    setup_script="rhel.sh"
   fi
 fi
 
