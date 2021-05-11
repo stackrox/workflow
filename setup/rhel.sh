@@ -7,6 +7,16 @@ source "$(dirname "$SCRIPT")/../setup/packages.sh"
 
 : ${SUDO:=sudo}
 
+echo Checking for snap
+if [[ ! -x "$(command -v snap)" ]]; then
+  set -x
+  echo Installing snap
+  "${SUDO}" yum install snapd -y
+  "${SUDO}" systemctl enable --now snapd.socket
+  "${SUDO}" ln -s /var/lib/snapd/snap /snap
+  set +x
+fi
+
 echo Installing required packages
 for pkg in "${REQUIRED_PACKAGES[@]}"
 do
