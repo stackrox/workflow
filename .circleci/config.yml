@@ -28,12 +28,10 @@ jobs:
 
 workflows:
   version: 2
-  test:
+  test_and_build:
     jobs:
       - tests
-      - tools-test
-  build:
-    jobs:
+      - tools-tests
       - tools-build:
           requires:
-            - test
+            - tests
