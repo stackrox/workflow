@@ -38,6 +38,31 @@ any other exit status implies that an error occurred but the job should still ru
 				fmt.Print(outb.String())
 				os.Exit(2)
 			}
+			commits := strings.Split(outb.String(), "\n")
+			for i, j := 0, len(commits)-1; i < j; i, j = i+1, j-1 {
+				commits[i], commits[j] = commits[j], commits[i]
+			}
+
+			configFile, ok := os.LookupEnv("ROXCI_CONFIG_FILE")
+			if !ok {
+				configFile = ".circleci/roxci.yml"
+			}
+			recipes, err := LoadRecipes(configFile)
+			if err != nil {
+				log.Errorf("Cannot load recipes: %v", err)
+				os.Exit(2)
+			}
+
+			run, err := Check(args[0], commits, recipes)
+			if err != nil {
+				log.Errorf("Check failed: %v", err)
+				os.Exit(2)
+			}
+
+			if !run {
+				os.Exit(1)
+			}
+
 			os.Exit(0)
 		},
 	}
@@ -51,6 +76,7 @@ func Check(job string, commitMessages []string, recipes *[]Recipe) (bool, error)
 	for _, message := range commitMessages {
 		if subMatch := roxciCommandRe.FindStringSubmatch(message); len(subMatch) == 2 {
 			roxciCommandStr = subMatch[1]
+			log.Infof("Checking against commit message: %s", message)
 			break
 		}
 	}
@@ -85,11 +111,13 @@ func Check(job string, commitMessages []string, recipes *[]Recipe) (bool, error)
 		}
 		for _, excluded := range exclude {
 			if job == excluded {
+				log.Infof("Job '%s' is explicitly excluded", job)
 				return false, nil
 			}
 		}
 		for _, included := range include {
 			if job == included {
+				log.Infof("Job '%s' is explicitly included", job)
 				return true, nil
 			}
 		}
@@ -113,16 +141,20 @@ func checkRunRecipeForJob(runJob string, runRecipe string, recipes *[]Recipe) (b
 	if runRecipe == "default" {
 		return true, nil
 	}
+
+	log.Infof("Checking for job '%s' in recipe '%s'", runJob, runRecipe)
+
 	for _, recipe := range *recipes {
 		if recipe.Name == runRecipe {
 			for job, _ := range recipe.Jobs {
 				if job == runJob {
+					log.Infof("Job '%s' is included", runJob)
 					return true, nil
 				}
 			}
+			log.Infof("Job '%s' is not included", runJob)
 			return false, nil
 		}
-		return true, errors.New("there is no such recipe: " + runRecipe)
 	}
-	return true, nil
+	return true, errors.New("there is no such recipe: " + runRecipe)
 }

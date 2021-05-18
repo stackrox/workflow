@@ -22,7 +22,7 @@ func TestJobInSimpleRecipeCommand(t *testing.T) {
 }
 
 func TestJobInVerboseRecipeCommand(t *testing.T) {
-	run, err := Check("a", []string{"/roxci recipe=one"}, validRecipes)
+	run, err := Check("a", []string{"/roxci recipe=two"}, validRecipes)
 	assert.Nil(t, err)
 	assert.True(t, run)
 }
@@ -34,7 +34,7 @@ func TestJobNotInSimpleRecipeCommand(t *testing.T) {
 }
 
 func TestJobNotInVerboseRecipeCommand(t *testing.T) {
-	run, err := Check("d", []string{"/roxci recipe=one"}, validRecipes)
+	run, err := Check("d", []string{"/roxci recipe=two"}, validRecipes)
 	assert.Nil(t, err)
 	assert.False(t, run)
 }
