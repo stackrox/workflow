@@ -33,5 +33,5 @@ func TestValid(t *testing.T) {
 	recipes, err := LoadRecipes("testfiles/valid.yml")
 	assert.Nil(t, err)
 	assert.Equal(t, len(*recipes), 3)
-	assert.EqualValues(t, map[string]string{"a":"", "b":"", "d":""}, (*recipes)[2].Jobs)
+	assert.EqualValues(t, map[string]string{"a": "", "b": "", "d": ""}, (*recipes)[2].Jobs)
 }

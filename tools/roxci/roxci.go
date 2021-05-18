@@ -1,5 +1,0 @@
-package roxci
-
-func main() {
-
-}
