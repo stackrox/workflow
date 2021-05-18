@@ -76,7 +76,7 @@ func checkRunRecipeForJob(runJob string, runRecipe string, recipes *[]Recipe) (b
 	}
 	for _, recipe := range *recipes {
 		if recipe.Name == runRecipe {
-			for _, job := range recipe.Jobs {
+			for job, _ := range recipe.Jobs {
 				if job == runJob {
 					return true, nil
 				}

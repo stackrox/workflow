@@ -1,8 +1,12 @@
 - name: one
   description: the description of one
-  jobs: [a, b, c]
+  jobs:
+    a:
+    b:
 - name: two
   description: the description of two
 - name: three
   description: the description of three
-  jobs: [a, b, c]
+  jobs:
+    a:
+    b:

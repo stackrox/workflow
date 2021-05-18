@@ -7,7 +7,7 @@ import "io/ioutil"
 type Recipe struct {
 	Name        string
 	Description string
-	Jobs        []string
+	Jobs        map[string]string
 }
 
 func LoadRecipes(filename string) (*[]Recipe, error) {
