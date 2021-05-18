@@ -1,4 +1,4 @@
 
-.PHONY: test
-test:
+.PHONY: tests
+tests:
 	make -C tests test
