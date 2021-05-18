@@ -1,0 +1,9 @@
+- name: one
+  description: the description of one
+  jobs: [ a, b, c ]
+- name: two
+  description: the description of two
+  jobs: [ a, b, c ]
+- name: three
+  description: the description of three
+  jobs: [ a, b, c ]
