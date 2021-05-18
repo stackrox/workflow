@@ -1,4 +1,4 @@
-module github.com/stackrox/workflow/go/roxci
+module github.com/stackrox/workflow/tools/roxci
 
 go 1.16
 
