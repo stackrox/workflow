@@ -85,12 +85,17 @@ func Check(job string, commitMessages []string, recipes *[]Recipe) (bool, error)
 	}
 	roxciCommandStr = strings.ToLower(roxciCommandStr)
 
+	var runRecipes []string
 	var exclude []string
 	var include []string
 	pieces := strings.Split(roxciCommandStr, " ")
 	if len(pieces) >= 1 {
-		for _, argString := range pieces[1:] {
+		for idx, argString := range pieces {
 			argPieces := strings.Split(argString, "=")
+			if idx == 0 && len(argPieces) == 1 {
+				runRecipes = append(runRecipes, strings.Split(argString, ",")...)
+				continue
+			}
 			if len(argPieces) != 2 {
 				return true, errors.Errorf(
 					"%s is an unexpected /roxci arg",
@@ -98,6 +103,8 @@ func Check(job string, commitMessages []string, recipes *[]Recipe) (bool, error)
 				)
 			}
 			switch argPieces[0] {
+			case "recipe":
+				runRecipes = append(runRecipes, strings.Split(argPieces[1], ",")...)
 			case "exclude":
 				exclude = append(exclude, strings.Split(argPieces[1], ",")...)
 			case "include":
@@ -121,40 +128,37 @@ func Check(job string, commitMessages []string, recipes *[]Recipe) (bool, error)
 				return true, nil
 			}
 		}
-		return checkRunRecipeForJob(job, pieces[0], recipes)
+		return checkRunRecipeForJob(job, runRecipes, recipes)
 	}
 
 	return true, nil
 }
 
-func checkRunRecipeForJob(runJob string, runRecipe string, recipes *[]Recipe) (bool, error) {
-	pieces := strings.Split(runRecipe, "=")
-	if len(pieces) == 2 {
-		if pieces[0] != "recipe" {
-			return true, errors.Errorf(
-				"the /roxci recipe arg does not have recipe=<recipe> as expected (%s)",
-				runRecipe,
-			)
+func checkRunRecipeForJob(runJob string, runRecipes []string, recipes *[]Recipe) (bool, error) {
+	for _, runRecipe := range runRecipes {
+		if runRecipe == "default" {
+			return true, nil
 		}
-		runRecipe = pieces[1]
-	}
-	if runRecipe == "default" {
-		return true, nil
-	}
 
-	log.Infof("Checking for job '%s' in recipe '%s'", runJob, runRecipe)
+		log.Infof("Checking for job '%s' in recipe '%s'", runJob, runRecipe)
 
-	for _, recipe := range *recipes {
-		if recipe.Name == runRecipe {
-			for job, _ := range recipe.Jobs {
-				if job == runJob {
-					log.Infof("Job '%s' is included", runJob)
-					return true, nil
+		recipeFound := false
+		for _, recipe := range *recipes {
+			if recipe.Name == runRecipe {
+				recipeFound = true
+				for job, _ := range recipe.Jobs {
+					if job == runJob {
+						log.Infof("Job '%s' is included", runJob)
+						return true, nil
+					}
 				}
+				log.Infof("Job '%s' is not included in recipe '%s'", runJob, runRecipe)
 			}
-			log.Infof("Job '%s' is not included", runJob)
-			return false, nil
+		}
+		if !recipeFound {
+			return true, errors.New("there is no such recipe: " + runRecipe)
 		}
 	}
-	return true, errors.New("there is no such recipe: " + runRecipe)
+	log.Infof("Job '%s' is not included in any recipes", runJob)
+	return false, nil
 }

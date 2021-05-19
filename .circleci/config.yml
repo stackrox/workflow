@@ -23,7 +23,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: "Run build"
+          name: "Run tools build"
           command: make -C tools build
 
 workflows:

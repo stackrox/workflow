@@ -63,6 +63,30 @@ func TestJobExcludedWhenMany(t *testing.T) {
 	assert.False(t, run)
 }
 
+func TestJobInComposedRecipes(t *testing.T) {
+	run, err := Check("c", []string{"/roxci one,two"}, validRecipes)
+	assert.Nil(t, err)
+	assert.True(t, run)
+	run, err = Check("a", []string{"/roxci one,two"}, validRecipes)
+	assert.Nil(t, err)
+	assert.True(t, run)
+}
+
+func TestJobNotInComposedRecipes(t *testing.T) {
+	run, err := Check("d", []string{"/roxci one,two"}, validRecipes)
+	assert.Nil(t, err)
+	assert.False(t, run)
+}
+
+func TestJobInComposedRecipesII(t *testing.T) {
+	run, err := Check("c", []string{"/roxci recipe=one,two"}, validRecipes)
+	assert.Nil(t, err)
+	assert.True(t, run)
+	run, err = Check("a", []string{"/roxci recipe=two recipe=one"}, validRecipes)
+	assert.Nil(t, err)
+	assert.True(t, run)
+}
+
 func TestJobExcludedWhenManyMore(t *testing.T) {
 	run, err := Check("a", []string{"/roxci recipe=one exclude=b exclude=a"}, validRecipes)
 	assert.Nil(t, err)
