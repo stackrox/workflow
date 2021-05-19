@@ -34,4 +34,4 @@ workflows:
       - tools-tests
       - tools-build:
           requires:
-            - tests
+            - tools-tests
