@@ -16,12 +16,12 @@ func CheckCommand() *cobra.Command {
 	// $ roxci check <job name>
 	cmd := &cobra.Command{
 		Use:   "check <job name>",
-		Short: "Check if a job should run in CI",
-		Long: `Check if a job should run in CI.
-The exit status can be used to decide whether or not to run a job:
-  0 => run
-  1 => do not run
-any other exit status implies that an error occurred but the job should still run.`,
+		Short: "Check if a job should be skipped in CI",
+		Long: `Check if a job should be skipped in CI.
+The exit code can be used to decide whether or not to run a job:
+  0 => skip this job
+  1 => run
+any other exit code implies that an error occurred but the job should still be run.`,
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			log.SetLevel(log.Info)
@@ -59,7 +59,7 @@ any other exit status implies that an error occurred but the job should still ru
 				os.Exit(2)
 			}
 
-			if !run {
+			if run {
 				os.Exit(1)
 			}
 
