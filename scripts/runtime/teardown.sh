@@ -62,6 +62,8 @@ if kubectl api-versions | grep -q openshift.io; then
   for scc in central monitoring scanner sensor; do
     oc delete scc $scc
   done
+  oc delete route central -n stackrox
+  oc delete route central-mtls -n stackrox
 fi
 
 if [[ "${current_context}" == "docker-desktop" ]]; then
