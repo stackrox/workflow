@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Usage: smart-gogen (uses gogen only on files touched since smart-branch)
+# Usage: smart-gogen (runs gogen on directories of files touched since smart-branch)
 
 SCRIPT="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
 source "$(dirname "$SCRIPT")/../../lib/git.sh"
