@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Produces git diff relative to the last smart-branch commit.
+# Generates files using go generate relative to the last smart-branch commit.
 
 SCRIPT="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
 source "$(dirname "$SCRIPT")/../../lib/git.sh"
@@ -11,4 +11,4 @@ if [[ -z "$marker_commit" ]]; then
 	die 'Could not find a smart-branch commit. Please run `smart-rebase [<base-branch>]` first.'
 fi
 
-git diff "$marker_commit" -- "$@"
+git diff "$marker_commit" --name-only | xargs -n 1 dirname | sort -u | xargs gogen
