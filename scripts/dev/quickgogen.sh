@@ -45,7 +45,7 @@ function private_gogen() {
 
 	einfo "Running go generate..."
 	for dir in "${godirs[@]}"; do
-	  einfo "  Generating for ${dir}..."
+	  einfo "...Generating for ${dir}"
     ( cd "$dir" && go generate "./" ) && (( status == 0 ))
     status=$?
 	done
