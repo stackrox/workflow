@@ -59,7 +59,7 @@ kubectl -n stackrox get clusterrole,clusterrolebinding,psp,validatingwebhookconf
 [[ "${#stackrox_pvs[@]}" == 0 ]] || kubectl delete --wait pv "${stackrox_pvs[@]}"
 
 if kubectl api-versions | grep -q openshift.io; then
-  for scc in central monitoring scanner sensor; do
+  for scc in stackrox-central stackrox-monitoring stackrox-scanner stackrox-sensor; do
     oc delete scc $scc
   done
   oc delete route central -n stackrox
