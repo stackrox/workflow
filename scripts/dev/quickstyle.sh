@@ -213,8 +213,8 @@ if [[ -f "${gitroot}/go.mod" ]]; then
 	export GO111MODULE=on
 fi
 
-# From https://stackoverflow.com/questions/28666357/git-how-to-get-default-branch#comment92366240_50056710
-main_branch="$(git remote show origin | grep "HEAD branch" | sed 's/.*: //')"
+# https://stackoverflow.com/a/44750379
+main_branch="$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')"
 [[ -n "${main_branch}" ]] || die "Failed to get main branch"
 
 diffbase="$(git merge-base HEAD "origin/${main_branch}")"
