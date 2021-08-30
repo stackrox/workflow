@@ -213,7 +213,8 @@ if [[ -f "${gitroot}/go.mod" ]]; then
 	export GO111MODULE=on
 fi
 
-main_branch="$(git rev-parse --symbolic-full-name origin/HEAD | sed 's@^refs/remotes/origin/@@')"
+# https://stackoverflow.com/a/44750379
+main_branch="$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')"
 [[ -n "${main_branch}" ]] || die "Failed to get main branch"
 
 diffbase="$(git merge-base HEAD "origin/${main_branch}")"
