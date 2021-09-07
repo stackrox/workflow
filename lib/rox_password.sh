@@ -37,7 +37,7 @@ _get_rox_admin_password() {
     	return 2
     fi
 
-    : ${ROX_DIR:=${GOPATH?${HOME}/go}/src/github.com/stackrox/rox}
+    : ${ROX_DIR:=${GOPATH:-${HOME}/go}/src/github.com/stackrox/rox}
 	password_file="${ROX_DIR}/deploy/${orch}/central-deploy/password"
 
 	if [[ ! -f "$password_file" ]]; then
