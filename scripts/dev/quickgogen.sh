@@ -12,6 +12,9 @@ if [[ -f "${gitroot}/go.mod" ]]; then
 	export GO111MODULE=on
 fi
 
+# Various code generation helpers are expected to be in the PATH when called by go generate.
+export PATH="$PATH:${gitroot}/tools/generate-helpers"
+
 # From https://stackoverflow.com/questions/28666357/git-how-to-get-default-branch#comment92366240_50056710
 main_branch="$(git remote show origin | grep "HEAD branch" | sed 's/.*: //')"
 [[ -n "${main_branch}" ]] || die "Failed to get main branch"
