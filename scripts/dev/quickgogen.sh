@@ -39,18 +39,18 @@ function private_gogen() {
 	IFS=$'\n' read -d '' -r -a gofiles < <(
 		printf '%s\n' "${changed_files[@]}" |
 		grep '\.go$'
-  )
-  [[ "${#gofiles[@]}" == 0 ]] && return 0
+	)
+	[[ "${#gofiles[@]}" == 0 ]] && return 0
 
-  IFS=$'\n' read -d '' -r -a godirs < <(
+	IFS=$'\n' read -d '' -r -a godirs < <(
 		for f in "${gofiles[@]}"; do dirname "$f"; done |
-    sort | uniq)
+		sort | uniq)
 
 	einfo "Running go generate..."
 	for dir in "${godirs[@]}"; do
-	  einfo "...Generating for ${dir}"
-    ( cd "$dir" && go generate "./" ) && (( status == 0 ))
-    status=$?
+		einfo "...Generating for ${dir}"
+		( cd "$dir" && go generate "./" ) && (( status == 0 ))
+		status=$?
 	done
 
 	return "${status}"
