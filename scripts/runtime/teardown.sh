@@ -54,7 +54,7 @@ kubectl -n stackrox get application -o name | xargs kubectl -n stackrox delete -
   kubectl -n stackrox get cm,deploy,ds,hpa,networkpolicy,role,rolebinding,secret,svc,serviceaccount,pvc -o name
   # Delete operator CRs. This is broken out into a separate invocation, as the entire command fails
   # if the CRDs are not available
-  kubectl -n stackrox get central.platform.stackrox.io,securedcluster.platform.stackrox.io -o name 2>/dev/null
+  kubectl -n stackrox get central.platform.stackrox.io,securedcluster.platform.stackrox.io -o name 2>/dev/null || true
 } | xargs kubectl -n stackrox delete --wait
 # Only delete cluster-wide RBAC/PSP-related resources that contain have the app.kubernetes.io/name=stackrox label.
 kubectl -n stackrox get clusterrole,clusterrolebinding,psp,validatingwebhookconfiguration -o name -l app.kubernetes.io/name=stackrox | xargs kubectl -n stackrox delete --wait
