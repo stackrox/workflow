@@ -71,4 +71,11 @@ if [[ "${current_context}" == "docker-desktop" ]]; then
   docker run --rm -it -v /:/vm-root alpine:edge rm -rf /vm-root/var/lib/stackrox
 fi
 
+kubectl get ns proxies &> /dev/null
+has_proxies=$?
+if [[ $has_proxies == 0 ]]; then
+	einfo "Deleting proxies namespace"
+	kubectl delete namespace proxies
+fi
+
 einfo "Teardown complete."
