@@ -66,7 +66,7 @@ fi
 base_kubeconfig=${base_kubeconfig:-$DEFAULT_BASE_KUBECONFIG}
 
 # Create a backup if necessary
-if ($create_backup); then
+if [ "$create_backup" = true ] ; then
 	backup_file=$(mktemp "/tmp/kconfig.bak.XXXXX")
 	cp -p "${base_kubeconfig[@]}" ${backup_file}
 	echo "Find backup in ${backup_file}"
@@ -99,6 +99,6 @@ tmp_merged=$(mktemp "/tmp/kconfig.merged.XXXXX")
 # Don't want to write in place because sometimes it will truncate the file before kubectl can read it
 KUBECONFIG=${base_kubeconfig}:${file} kubectl config view --flatten > ${tmp_merged}
 
-mv ${tmp_merged} ${base_kubeconfig}
+mv "${tmp_merged}" "${base_kubeconfig}"
 
 echo "Merged!"
