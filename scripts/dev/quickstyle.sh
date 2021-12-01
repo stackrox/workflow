@@ -92,7 +92,7 @@ function gostyle() {
 		status=$?
 	fi
 
-	if ! golangci_linter_enabled 'golint'; then
+	if ! golangci_linter_enabled 'golint' && ! golangci_linter_enabled 'revive'; then
 		einfo "lint"
 		local lint_script
 		lint_script="$(git ls-files -- "${gitroot}" | egrep '\bgo-lint\.sh$' | head -n 1)"
