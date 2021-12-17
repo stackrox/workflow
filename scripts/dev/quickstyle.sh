@@ -12,13 +12,13 @@ source "$(dirname "$SCRIPT")/../../setup/packages.sh"
 check_dependencies
 
 function newlinecheck() {
-  local check_newlines
+	local check_newlines
 	check_newlines="$(
 		git ls-files -- "${gitroot}" | egrep '\check-newlines\.sh$' | head -n 1
 		)"
-  [[ -x "${check_newlines}" ]] || return 0  # Silently exit
-  einfo "Adding missing newlines..."
-  "${check_newlines}" --fix "$@"
+	[[ -x "${check_newlines}" ]] || return 0  # Silently exit
+	einfo "Adding missing newlines..."
+	"${check_newlines}" --fix "$@"
 }
 
 # Expected arguments:
@@ -116,8 +116,7 @@ function gostyle() {
 		status=$?
 	fi
 
-	go_run_program "validateimports" '\b(crosspkg|validate)imports/verify\.go$' "${godirs[@]}" && (( status == 0 ))
-	status=$?
+	roxvet_includes_validateimports=0
 
 	einfo "roxvet"
 	local rox_vet="$(go env GOPATH)/bin/roxvet"
@@ -125,10 +124,18 @@ function gostyle() {
 	    go install "${gitroot}/tools/roxvet"
 	fi
 	if [[ -x "${rox_vet}" ]]; then
-	    go vet -vettool "${rox_vet}" "${godirs[@]}" && (( status == 0 ))
-	    status=$?
+		go vet -vettool "${rox_vet}" "${godirs[@]}" && (( status == 0 ))
+		status=$?
+		if "${rox_vet}" help | grep -q validateimports; then
+			roxvet_includes_validateimports=1
+		fi
 	else
-	    ewarn "roxvet not found"
+		ewarn "roxvet not found"
+	fi
+
+	if (( roxvet_includes_validateimports == 0 )); then
+		go_run_program "validateimports" '\b(crosspkg|validate)imports/verify\.go$' "${godirs[@]}" && (( status == 0 ))
+		status=$?
 	fi
 
 	einfo "staticcheck"
