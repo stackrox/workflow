@@ -60,7 +60,7 @@ function gostyle() {
 	if [[ -f "${gitroot}/.golangci.yml" ]]; then
 		einfo "golangci-lint"
 		if [[ -x "$(which golangci-lint)" ]]; then
-			golangci-lint run "${godirs[@]}" --fix && (( status == 0 ))
+			golangci-lint run --allow-parallel-runners "${godirs[@]}" --fix && (( status == 0 ))
 			status=$?
 		else
 			ewarn "No golangci-lint binary found, but the repo has a config file. Skipping..."
