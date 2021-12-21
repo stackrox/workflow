@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-PACKAGES_PATH="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")" 
+PACKAGES_PATH="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
 source "$(dirname "$PACKAGES_PATH")/../lib/common.sh"
 
 # Dependent packages
@@ -8,13 +8,15 @@ REQUIRED_PACKAGES=(yq jq)
 
 
 # Expected arguments: Required major version, e.g. "4.0.0"
-# Returns:            Whether the running yq version is bigger
-function check_min_required_yq_version() {
-  # Determine yq version
-  local yq_system_version="$(yq --version | cut -d' ' -f3)"
-  printf '%s\n%s\n' "$1" "$yq_system_version"  | sort -V -C
+# Returns:            Whether the running yq version is bigger or equal
+check_min_required_yq_version() {
+  local yq_version="0.0.0"
+  local version_regex="^yq\ .*version\ (.*)$"
+  if [[ "$(yq --version)" =~ $version_regex ]]; then
+    yq_version="${BASH_REMATCH[1]}"
+  fi
+  printf '%s\n%s\n' "$1" "$yq_version"  | sort -V -C
 }
-
 
 function check_dependencies() {
   local missing
