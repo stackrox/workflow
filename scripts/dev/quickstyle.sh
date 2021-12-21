@@ -159,10 +159,12 @@ function golangci_linter_enabled() {
   local linter
   local enabled_linters
   linter="${1}"
-  
+
   # yq 4 introduced breaking syntax changes
-  if check_min_required_yq_version "4.0.0"; then
-    yaml_to_json=(yq eval -j)
+  if check_min_required_yq_version "4.12.0"; then
+    yaml_to_json=(yq eval -o=json)
+  elif check_min_required_yq_version "4.0.0"; then
+    yaml_to_json=(yq eval --tojson)
   else
     yaml_to_json=(yq r -j)
   fi
