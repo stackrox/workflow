@@ -60,7 +60,7 @@ function gostyle() {
 	if [[ -f "${gitroot}/.golangci.yml" ]]; then
 		einfo "golangci-lint"
 		if [[ -x "$(which golangci-lint)" ]]; then
-			golangci-lint run "${godirs[@]}" --fix && (( status == 0 ))
+			golangci-lint run --allow-parallel-runners "${godirs[@]}" --fix && (( status == 0 ))
 			status=$?
 		else
 			ewarn "No golangci-lint binary found, but the repo has a config file. Skipping..."
@@ -159,10 +159,12 @@ function golangci_linter_enabled() {
   local linter
   local enabled_linters
   linter="${1}"
-  
+
   # yq 4 introduced breaking syntax changes
-  if check_min_required_yq_version "4.0.0"; then
-    yaml_to_json=(yq eval -j)
+  if check_min_required_yq_version "4.12.0"; then
+    yaml_to_json=(yq eval -o=json)
+  elif check_min_required_yq_version "4.0.0"; then
+    yaml_to_json=(yq eval --tojson)
   else
     yaml_to_json=(yq r -j)
   fi
