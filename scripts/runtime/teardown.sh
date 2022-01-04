@@ -24,6 +24,7 @@ well_known_dev_context_regexes=(
   minikube
   gke.*setup-dev.*
   gke_srox-temp-dev-test_.*
+  .*openshift-infra-rox-systems.*
 )
 
 current_context="$(kubectl config current-context)"

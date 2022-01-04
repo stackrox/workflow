@@ -13,13 +13,13 @@ source "$(dirname "$SCRIPT")/../../lib/git.sh"
 check_dependencies
 
 function newlinecheck() {
-  local check_newlines
+	local check_newlines
 	check_newlines="$(
 		git ls-files -- "${gitroot}" | egrep '\check-newlines\.sh$' | head -n 1
 		)"
-  [[ -x "${check_newlines}" ]] || return 0  # Silently exit
-  einfo "Adding missing newlines..."
-  "${check_newlines}" --fix "$@"
+	[[ -x "${check_newlines}" ]] || return 0  # Silently exit
+	einfo "Adding missing newlines..."
+	"${check_newlines}" --fix "$@"
 }
 
 # Expected arguments:
@@ -61,7 +61,7 @@ function gostyle() {
 	if [[ -f "${gitroot}/.golangci.yml" ]]; then
 		einfo "golangci-lint"
 		if [[ -x "$(which golangci-lint)" ]]; then
-			golangci-lint run "${godirs[@]}" --fix && (( status == 0 ))
+			golangci-lint run --allow-parallel-runners "${godirs[@]}" --fix && (( status == 0 ))
 			status=$?
 		else
 			ewarn "No golangci-lint binary found, but the repo has a config file. Skipping..."
@@ -93,7 +93,7 @@ function gostyle() {
 		status=$?
 	fi
 
-	if ! golangci_linter_enabled 'golint'; then
+	if ! golangci_linter_enabled 'golint' && ! golangci_linter_enabled 'revive'; then
 		einfo "lint"
 		local lint_script
 		lint_script="$(git ls-files -- "${gitroot}" | egrep '\bgo-lint\.sh$' | head -n 1)"
@@ -117,8 +117,7 @@ function gostyle() {
 		status=$?
 	fi
 
-	go_run_program "validateimports" '\b(crosspkg|validate)imports/verify\.go$' "${godirs[@]}" && (( status == 0 ))
-	status=$?
+	roxvet_includes_validateimports=0
 
 	einfo "roxvet"
 	local rox_vet="$(go env GOPATH)/bin/roxvet"
@@ -126,10 +125,18 @@ function gostyle() {
 	    go install "${gitroot}/tools/roxvet"
 	fi
 	if [[ -x "${rox_vet}" ]]; then
-	    go vet -vettool "${rox_vet}" "${godirs[@]}" && (( status == 0 ))
-	    status=$?
+		go vet -vettool "${rox_vet}" "${godirs[@]}" && (( status == 0 ))
+		status=$?
+		if "${rox_vet}" help | grep -q validateimports; then
+			roxvet_includes_validateimports=1
+		fi
 	else
-	    ewarn "roxvet not found"
+		ewarn "roxvet not found"
+	fi
+
+	if (( roxvet_includes_validateimports == 0 )); then
+		go_run_program "validateimports" '\b(crosspkg|validate)imports/verify\.go$' "${godirs[@]}" && (( status == 0 ))
+		status=$?
 	fi
 
 	einfo "staticcheck"
@@ -153,10 +160,12 @@ function golangci_linter_enabled() {
   local linter
   local enabled_linters
   linter="${1}"
-  
+
   # yq 4 introduced breaking syntax changes
-  if check_min_required_yq_version "4.0.0"; then
-    yaml_to_json=(yq eval -j)
+  if check_min_required_yq_version "4.12.0"; then
+    yaml_to_json=(yq eval -o=json)
+  elif check_min_required_yq_version "4.0.0"; then
+    yaml_to_json=(yq eval --tojson)
   else
     yaml_to_json=(yq r -j)
   fi

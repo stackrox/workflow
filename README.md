@@ -41,6 +41,7 @@ getprnumber - Gets the PR number corresponding to the current checked out branch
 gogen - Runs go generate rooted at the current working directory (or a directory specified as the first
 killpf - killpf <port> kills a kubectl port-forward running on the passed port, if there is one. Note that it ONLY kills kubectl port-forwards, not arbtirary processes.
 logmein - Opens a browser, logging you in as the same user that `roxcurl` uses.
+mergekconf - Merges the provided kubeconfig file into the base one used by kubectl.
 openbranch - Opens the web page corresponding to the currently checked-out branch of the repo you're in.
 openjira - Opens the web page corresponding to the JIRA ticket for the branch you're on.
 openpr - Opens the web page corresponding to the Pull Request for the currently checked-out branch of the repo you're in.
