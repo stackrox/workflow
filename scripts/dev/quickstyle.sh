@@ -193,9 +193,15 @@ function circlecistyle() {
 	local changed_files=("$@")
 	if printf '%s\n' "${changed_files[@]}" | grep -qx "${gitroot}/.circleci/config.yml"; then
 		if [[ -x "$(command -v circleci)" ]]; then
-			einfo "Validating Circle config..."
-			circleci config validate "${gitroot}/.circleci/config.yml" --skip-update-check
-			status=$?
+			einfo "Validating CircleCI CLI tool..."
+			if ! circleci diagnostic; then
+				ewarn "CircleCI config has changed but the CircleCI CLI tool is not operational."
+				ewarn "set CIRCLECI_CLI_TOKEN or run circleci setup."
+			else
+				einfo "Validating CircleCI config..."
+				circleci config validate --org-slug=gh/stackrox "${gitroot}/.circleci/config.yml" --skip-update-check
+				status=$?
+			fi
 		else
 			ewarn "CircleCI config changed, but no local CircleCI CLI detected. Consider installing it to run validation."
 		fi
