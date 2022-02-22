@@ -19,7 +19,7 @@ if [[ -z "$SCRIPT" ]]; then
   return
 fi
 
-SCRIPT="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "$SCRIPT")"
+SCRIPT="$(python3 -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "$SCRIPT")"
 
 ROX_WORKFLOW_BIN="$(dirname "$SCRIPT")/bin"
 ROX_WORKFLOW_BIN="$(cd "$ROX_WORKFLOW_BIN"; pwd)"

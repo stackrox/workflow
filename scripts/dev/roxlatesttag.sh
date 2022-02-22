@@ -4,7 +4,7 @@
 # By default it displays the main image.
 # roxlatesttag <SERVICE_NAME>
 
-SCRIPT="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
+SCRIPT="$(python3 -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
 DIR="$(dirname "$SCRIPT")"
 
 image=$1

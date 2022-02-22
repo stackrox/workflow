@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-pushd >/dev/null "$(dirname "$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")")"
+pushd >/dev/null "$(dirname "$(python3 -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")")"
 source "common.sh"
 popd >/dev/null
 
