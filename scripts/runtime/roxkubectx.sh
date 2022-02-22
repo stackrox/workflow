@@ -5,6 +5,6 @@
 # Please just use `kubectl config current-context` (or your own alias for it) instead.
 
 
-SCRIPT="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
+SCRIPT="$(python3 -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
 
 kubectl config current-context

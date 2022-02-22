@@ -17,7 +17,7 @@
 
 set -eu
 
-pushd >/dev/null "$(dirname "$(python -c "import os; print(os.path.realpath('$0'))")")"
+pushd >/dev/null "$(dirname "$(python3 -c "import os; print(os.path.realpath('$0'))")")"
 source "../../lib/common.sh"
 source "../../lib/rox_password.sh"
 popd >/dev/null

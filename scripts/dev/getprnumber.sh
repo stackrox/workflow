@@ -4,13 +4,13 @@
 # You WILL need to have your Github or Bitbucket creds checked in to ~/.stackrox/workflow-config.json for this to work.
 # Usage: getprnumber (while inside the repo, with the branch you care about checked out.)
 
-SCRIPT="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
+SCRIPT="$(python3 -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
 source "$(dirname "$SCRIPT")/../../lib/git.sh"
 
 service="$(bitbucket_or_github)"
 [[ $? -eq 0 ]] || die
 
-SCRIPT="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
+SCRIPT="$(python3 -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
 source "$(dirname "$SCRIPT")/../../lib/${service}.sh"
 
 

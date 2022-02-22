@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-PACKAGES_PATH="$(python -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
+PACKAGES_PATH="$(python3 -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
 source "$(dirname "$PACKAGES_PATH")/../lib/common.sh"
 
 # Dependent packages
