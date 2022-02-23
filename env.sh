@@ -38,7 +38,10 @@ export PATH
 # script.
 function cdrox() {
 	[[ -n "$GOENV_GOPATH" ]] || { echo >&2 "GOPATH could not be determined"; return 1; }
-	cd "${GOENV_GOPATH}/src/github.com/stackrox/stackrox"
+    # if an arg is provided, attempt to cd into that directory,
+    # defaulting to stackrox.
+    repo=${1:-stackrox}
+	cd "${GOENV_GOPATH}/src/github.com/stackrox/${repo}"
 }
 
 # The following modify the KUBECONFIG environment variable, so they need to be functions, not scrips.
