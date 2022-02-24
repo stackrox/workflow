@@ -44,6 +44,17 @@ function cdrox() {
 	cd "${GOENV_GOPATH}/src/github.com/stackrox/${repo}"
 }
 
+# This is a completion function for the stackrox directory, giving any repository
+# directories within to complete the cdrox function
+function _cdrox_comp() {
+	[[ -n "$GOENV_GOPATH" ]] || return
+	[[ -d "${GOENV_GOPATH}/src/github.com/stackrox/" ]] || return
+	COMPREPLY=($(cd "${GOENV_GOPATH}/src/github.com/stackrox/" && compgen -d))
+}
+
+# registers the completion function with the cdrox function we wish to complete
+complete -F _cdrox_comp cdrox
+
 # The following modify the KUBECONFIG environment variable, so they need to be functions, not scrips.
 
 # Save the active kubernetes configuration in a named file (named either after the first argument, or, if empty,
