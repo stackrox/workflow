@@ -21,15 +21,18 @@ if [[ "$platform" == "Darwin" ]]; then
 fi
 
 if [[ "$platform" == "Linux" ]]; then
-  if [[ -f /etc/lsb-release ]]; then
-    distrib=$(env -i bash -c '. /etc/lsb-release && echo ${DISTRIB_ID}')
-    if [[ -n "$distrib" ]]; then
-      platform="$platform $distrib"
-    fi
-    if [[ "$distrib" == "Ubuntu" ]]; then
-      setup_script="ubuntu.sh"
-    fi
+  distrib="$(lsb_release --id --short)"
+  if [[ -n "$distrib" ]]; then
+    platform="$platform $distrib"
   fi
+  case "$distrib" in
+  Ubuntu)
+    setup_script="ubuntu.sh"
+    ;;
+  RedHatEnterprise)
+    setup_script="rhel.sh"
+    ;;
+  esac
 fi
 
 [[ -n "$setup_script" ]] || die "Unsupported platform: $platform"
