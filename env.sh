@@ -38,8 +38,22 @@ export PATH
 # script.
 function cdrox() {
 	[[ -n "$GOENV_GOPATH" ]] || { echo >&2 "GOPATH could not be determined"; return 1; }
-	cd "${GOENV_GOPATH}/src/github.com/stackrox/stackrox"
+	# if an arg is provided, attempt to cd into that directory,
+	# defaulting to stackrox.
+	repo="${1:-stackrox}"
+	cd "${GOENV_GOPATH}/src/github.com/stackrox/${repo}"
 }
+
+# This is a completion function for the stackrox directory, giving any repository
+# directories within to complete the cdrox function
+function _cdrox_comp() {
+	[[ -n "$GOENV_GOPATH" ]] || return
+	[[ -d "${GOENV_GOPATH}/src/github.com/stackrox/" ]] || return
+	COMPREPLY=($(cd "${GOENV_GOPATH}/src/github.com/stackrox/" && compgen -d))
+}
+
+# registers the completion function with the cdrox function we wish to complete
+complete -F _cdrox_comp cdrox
 
 # The following modify the KUBECONFIG environment variable, so they need to be functions, not scrips.
 
