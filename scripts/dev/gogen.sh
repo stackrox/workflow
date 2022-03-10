@@ -31,7 +31,7 @@ while [[ $# -gt 0 ]]; do
       einfo "Will pass ${run[@]} to go generate"
       ;;
     *)
-      POSITIONAL_ARGS+=("$arg") # save positional arg
+      positional_args+=("$arg") # save positional arg
       ;;
   esac
 done
@@ -43,7 +43,7 @@ private_gogen() {
 }
 
 
-set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
+set -- "${positional_args[@]}" # restore positional parameters
 
 if [[ "$#" -eq 0 ]]; then
   # Default argument is current working directory.
