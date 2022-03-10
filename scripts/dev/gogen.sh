@@ -21,22 +21,24 @@ positional_args=()
 run=()
 
 while [[ $# -gt 0 ]]; do
-  case $1 in
+  arg="$1"
+  shift
+  case "$arg" in
     -run)
-      run=(-run "$2")
-      shift # past argument
-      shift # past value
+      val="$1"
+      shift
+      run=(-run "$val")
+      einfo "Will pass ${run[@]} to go generate"
       ;;
     *)
-      POSITIONAL_ARGS+=("$1") # save positional arg
-      shift # past argument
+      POSITIONAL_ARGS+=("$arg") # save positional arg
       ;;
   esac
 done
 
 private_gogen() {
   target_dir=$1
-  echo "Generating for ${target_dir}"
+  einfo "Generating for ${target_dir}"
   ( cd "$target_dir" && go generate "${run[@]}" "./..." )
 }
 
