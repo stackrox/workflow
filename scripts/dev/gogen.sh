@@ -43,8 +43,6 @@ private_gogen() {
 
 set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
 
-set -x
-
 if [[ "$#" -eq 0 ]]; then
   # Default argument is current working directory.
   set -- .
