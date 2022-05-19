@@ -1,8 +1,23 @@
 #!/usr/bin/env bash
 
-CONFIG_FILE="$HOME/.stackrox/workflow-config.json"
+# Use CONFIG_HOME if it exists. Otherwise follow XDG base directory specification.
+CONFIG_HOME="${HOME}/.stackrox/workflow-config.json"
+if [ -f "${CONFIG_FILE}" ]; then
+	CONFIG_FILE=$CONFIG_HOME
+else
+	XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-${HOME}/.config}"
+	CONFIG_FILE="${XDG_CONFIG_HOME}/stackrox/workflow-config.json"
+fi
 
-ROX_WORKFLOW_WORKDIR="$HOME/.roxworkflow-workdir"
+# Use WORKDIR_HOME if it exists. Otherwise follow XDG base directory specification.
+WORKDIR_HOME="${HOME}/.roxworkflow-workdir"
+if [ -d "${WORKDIR_HOME}" ]; then
+	ROX_WORKFLOW_WORKDIR=$WORKDIR_HOME
+else
+	XDG_CACHE_HOME="${XDG_CACHE_HOME:-${HOME}/.cache}"
+	ROX_WORKFLOW_WORKDIR="${XDG_CACHE_HOME}/stackrox"
+fi
+
 PYTHON_INTERPRETER="$(which python3)"
 
 bold="$(tput bold)"
