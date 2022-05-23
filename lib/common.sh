@@ -2,7 +2,7 @@
 
 # Use CONFIG_HOME if it exists. Otherwise follow XDG base directory specification.
 CONFIG_HOME="${HOME}/.stackrox/workflow-config.json"
-if [ -f "${CONFIG_FILE}" ]; then
+if [ -f "${CONFIG_HOME}" ]; then
 	CONFIG_FILE=$CONFIG_HOME
 else
 	XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-${HOME}/.config}"
