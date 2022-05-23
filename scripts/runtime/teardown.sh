@@ -25,6 +25,8 @@ well_known_dev_context_regexes=(
   gke.*setup-dev.*
   gke_srox-temp-dev-test_.*
   .*openshift-infra-rox-systems.*
+  colima
+  rancher-desktop
 )
 
 current_context="$(kubectl config current-context)"
