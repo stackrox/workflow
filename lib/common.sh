@@ -3,7 +3,7 @@
 # Use CONFIG_HOME if it exists. Otherwise follow XDG base directory specification.
 CONFIG_HOME="${HOME}/.stackrox/workflow-config.json"
 if [ -f "${CONFIG_HOME}" ]; then
-	CONFIG_FILE=$CONFIG_HOME
+	CONFIG_FILE="${CONFIG_HOME}"
 else
 	XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-${HOME}/.config}"
 	CONFIG_FILE="${XDG_CONFIG_HOME}/stackrox/workflow-config.json"
@@ -12,7 +12,7 @@ fi
 # Use WORKDIR_HOME if it exists. Otherwise follow XDG base directory specification.
 WORKDIR_HOME="${HOME}/.roxworkflow-workdir"
 if [ -d "${WORKDIR_HOME}" ]; then
-	ROX_WORKFLOW_WORKDIR=$WORKDIR_HOME
+	ROX_WORKFLOW_WORKDIR="${WORKDIR_HOME}"
 else
 	XDG_CACHE_HOME="${XDG_CACHE_HOME:-${HOME}/.cache}"
 	ROX_WORKFLOW_WORKDIR="${XDG_CACHE_HOME}/stackrox"
