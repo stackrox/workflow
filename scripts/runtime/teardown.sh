@@ -19,6 +19,7 @@ check_kubectl_version() {
 check_kubectl_version
 
 well_known_dev_context_regexes=(
+  colima
   docker-desktop
   docker-for-desktop
   minikube
