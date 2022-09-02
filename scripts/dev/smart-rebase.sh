@@ -13,7 +13,11 @@ current_branch="$(get_current_branch)"
 
 [[ -n "$current_branch" ]] || die "Failed to determine the current branch."
 
-match="$(git log --grep="^X-Smart-Branch-Parent: " --format="%H %s" --max-count=1)"
+search_range=()
+if [[ -n "$target_branch" ]]; then
+  search_range=("$(git merge-base HEAD ${target_branch})..HEAD")
+fi
+match="$(git log --grep="^X-Smart-Branch-Parent: " --format="%H %s" --max-count=1 "${search_range[@]}")"
 [[ $? == 0 ]] || die "Could not inspect git logs."
 
 if [[ -z "$match" ]]; then
