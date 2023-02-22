@@ -12,5 +12,4 @@ jobs:
         python-version: "3.7"
     - name: Test
       run: |
-        cd tests
         make test
