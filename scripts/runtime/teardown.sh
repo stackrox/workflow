@@ -49,7 +49,7 @@ IFS=$'\n' read -d '' -r -a stackrox_pvs < <(
 )
 
 # Delete deployments quickly. If we add a new deployment and forget to add it here, it'll get caught in the next line anyway.
-kubectl -n stackrox delete --grace-period=0 --force deploy/central deploy/sensor ds/collector deploy/monitoring
+kubectl -n stackrox delete --grace-period=0 --force deploy/central deploy/sensor ds/collector deploy/monitoring statefulsets/stackrox-monitoring-alertmanager
 kubectl -n stackrox get application -o name | xargs kubectl -n stackrox delete --wait
 # DO NOT ADD ANY NON-NAMESPACED RESOURCES TO THIS LIST, OTHERWISE ALL RESOURCES IN THE CLUSTER OF THAT TYPE
 # WILL BE DELETED!
