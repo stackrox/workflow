@@ -23,7 +23,7 @@ well_known_dev_context_regexes=(
   docker-for-desktop
   minikube
   gke.*setup-dev.*
-  gke_srox-temp-dev-test_.*
+  gke_acs-team-temp-dev_*
   .*openshift-infra-rox-systems.*
   colima
   rancher-desktop
