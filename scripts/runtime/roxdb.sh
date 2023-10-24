@@ -13,7 +13,7 @@ SCRIPT="$(python3 -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${B
 source "$(dirname "$SCRIPT")/../../lib/common.sh"
 
 usage() {
-  die "Usage: $0 [central/scanner] [namespace]"
+  die "Usage: $0 [central/scanner]"
 }
 
 validate_and_setup() {
