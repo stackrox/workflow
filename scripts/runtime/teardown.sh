@@ -18,30 +18,7 @@ check_kubectl_version() {
 
 check_kubectl_version
 
-well_known_dev_context_regexes=(
-  docker-desktop
-  docker-for-desktop
-  minikube
-  gke.*setup-dev.*
-  gke_acs-team-temp-dev_*
-  .*openshift-infra-rox-systems.*
-  colima
-  rancher-desktop
-)
-
-current_context="$(kubectl config current-context)"
-
-matched=0
-for regex in "${well_known_dev_context_regexes[@]}"; do
-  if [[ ${current_context} =~ ^${regex} ]]; then
-    matched=1
-    break
-  fi
-done
-
-if (( ! matched )); then
-  yes_no_prompt "Detected that you're connected to cluster ${current_context}, which is not a well-known dev environment. Are you sure you want to proceed with the teardown?" || { eecho "Exiting as requested"; exit 1; }
-fi
+test_in_well_known_dev_context
 
 # Collect all stackrox PVs before we delete the respective PVCs.
 IFS=$'\n' read -d '' -r -a stackrox_pvs < <(
