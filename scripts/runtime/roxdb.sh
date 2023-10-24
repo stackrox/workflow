@@ -22,13 +22,13 @@ validate_and_setup() {
 
   case "$db" in
     "central")
-      secret=central-db-password
+      secret="central-db-password"
       label="app=central-db"
       container="central-db"
       database="central_active"
       ;;
     "scanner")
-      secret=scanner-db-password
+      secret="scanner-db-password"
       label="app=scanner-db"
       container="db"
       database="postgres"
