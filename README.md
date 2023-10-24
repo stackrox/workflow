@@ -41,15 +41,16 @@ getprnumber - Gets the PR number corresponding to the current checked out branch
 gogen - Runs go generate rooted at the current working directory (or a directory specified as the first
 killpf - killpf <port> kills a kubectl port-forward running on the passed port, if there is one. Note that it ONLY kills kubectl port-forwards, not arbtirary processes.
 logmein - Opens a browser, logging you in as the same user that `roxcurl` uses.
-mergekconf - Merges the provided kubeconfig file into the base one used by kubectl.
+mergekconf - This command merges the provided kubeconfig file into the base one used by kubectl.
 openbranch - Opens the web page corresponding to the currently checked-out branch of the repo you're in.
 openjira - Opens the web page corresponding to the JIRA ticket for the branch you're on.
 openpr - Opens the web page corresponding to the Pull Request for the currently checked-out branch of the repo you're in.
 quickstyle - Runs style targets for all Go/JS files that have changed between the current code and master.
 roxcurl - Curls StackRox central at the endpoint specified. If you
+roxdb - Opens an interactive session to the specified stackrox database, by default attempts to connect to central-db in stackrox namespace.
 roxdebug - Starts dlv debugging session in running pod.
 roxhelp - Prints the help message for a Rox workflow command.
-roxkubectx - A `kubectl config current-context` wrapper that is aware of setup names.
+roxkubectx - [DEPRECATED] Alias for `kubectl config current-context`.
 roxlatestimage - Get the last docker image which is available locally for a given service.
 roxlatesttag - Get the last docker tag which is locally available.
 smart-branch - Usage: smart-branch (creates and checks out a new branch with marker commits to allow working on multiple dependend branches)
