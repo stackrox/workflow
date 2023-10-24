@@ -154,6 +154,6 @@ function test_in_well_known_dev_context() {
   done
 
   if (( ! matched )); then
-    yes_no_prompt "Detected that you're connected to cluster ${current_context}, which is not a well-known dev environment. Are you sure you want to proceed with the connection?" || { eecho "Exiting as requested"; exit 1; }
+    yes_no_prompt "Detected that you're connected to cluster ${current_context}, which is not a well-known dev environment. Are you sure you want to proceed?" || { eecho "Exiting as requested"; exit 1; }
   fi
 }
