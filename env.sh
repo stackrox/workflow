@@ -27,7 +27,7 @@ ROX_WORKFLOW_BIN="$(cd "$ROX_WORKFLOW_BIN"; pwd)"
 # Export select Go environment variables with the GOENV prefix.
 while read set_expr; do
 	eval "GOENV_${set_expr}"
-done < <(go env | egrep '^(GOROOT|GOBIN|GOPATH)=')
+done < <(go env | grep -E '^(GOROOT|GOBIN|GOPATH)=')
 
 [[ -n "$GOENV_GOROOT" ]] && PATH="$PATH:${GOENV_GOROOT}"
 [[ -n "$GOENV_GOBIN" ]] && PATH="$PATH:${GOENV_GOBIN}"

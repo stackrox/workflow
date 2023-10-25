@@ -32,6 +32,9 @@ if [[ "$platform" == "Linux" ]]; then
   RedHatEnterprise)
     setup_script="rhel.sh"
     ;;
+  Fedora)
+    setup_script="rhel.sh"
+    ;;
   esac
 fi
 
