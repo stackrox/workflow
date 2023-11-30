@@ -58,6 +58,12 @@ validate_and_setup() {
       container="db"
       database="postgres"
       ;;
+    "scanner4")
+      secret="scanner-v4-db-password"
+      label="app=scanner-v4-db"
+      container="db"
+      database="postgres"
+      ;;
     *)
       usage
       ;;
