@@ -3,13 +3,15 @@
 # Opens an interactive session to the specified stackrox database, by default attempts to connect to central-db in stackrox namespace.
 #
 # Accepts an optional positional argument <db>, which specifies the
-# database to connect to, valid values are "central" and "scanner". 
+# database to connect to, see examples for valid values.
 #
 # Also accepts an optional namespace flag "-n <namespace>".
 #
 # Example usages:
+#   roxdb                              Connects to central-db
 #   roxdb central                      Connects to central-db
 #   roxdb scanner                      Connects to scanner-db
+#   roxdb scanner4                     Connects to scanner-v4-db
 #   roxdb -n rhacs-operator scanner    Connects to scanner-db in rhacs-operator namespace
 
 SCRIPT="$(python3 -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
