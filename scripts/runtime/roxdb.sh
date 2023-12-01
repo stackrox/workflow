@@ -3,7 +3,7 @@
 # Opens an interactive session to the specified stackrox database, by default attempts to connect to central-db in stackrox namespace.
 #
 # Accepts an optional positional argument <db>, which specifies the
-# database to connect to, see examples for valid values.
+# database to connect to, see code for list of all valid values.
 #
 # Also accepts an optional namespace flag "-n <namespace>".
 #
@@ -18,7 +18,7 @@ SCRIPT="$(python3 -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${B
 source "$(dirname "$SCRIPT")/../../lib/common.sh"
 
 usage() {
-  die "Usage: $0 [-n <namespace>] [central/scanner]"
+  die "Usage: $0 [-n <namespace>] [central|scanner|scanner-v4]"
 }
 
 validate_and_setup() {
@@ -54,13 +54,13 @@ validate_and_setup() {
       container="central-db"
       database="central_active"
       ;;
-    "scanner")
+    "scanner"|"scan")
       secret="scanner-db-password"
       label="app=scanner-db"
       container="db"
       database="postgres"
       ;;
-    "scanner4")
+    "scanner4"|"scannerv4"|"scanner-v4"|"scan4"|"scanv4"|"scan-v4")
       secret="scanner-v4-db-password"
       label="app=scanner-v4-db"
       container="db"
@@ -71,6 +71,7 @@ validate_and_setup() {
       ;;
   esac
 }
+
 
 validate_and_setup "$@"
 
