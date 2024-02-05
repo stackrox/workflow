@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# This script starts a port-forwarding process to a Central pod. It automatically detects Central in the current selected
+# namespace. When the pod restarts this script automatically re-establishes the port-forward to never loose the connection
+# again.
+
 # Function to start port forwarding
 start_port_forward() {
     kubectl -n stackrox port-forward svc/central 8000:443 &
