@@ -2,6 +2,9 @@
 
 # Create a port-forward to central which automatically restarts the process after a restart of the Central pod.
 
+# Usage:
+#  central-port               Port-forwards local 8000 to Central and keeps the connection alive.
+
 start_port_forward() {
     kubectl -n stackrox port-forward svc/central 8000:443 &
     # Capture the process ID of the background process
