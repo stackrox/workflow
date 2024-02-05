@@ -32,8 +32,8 @@ _get_rox_admin_password() {
 
     local orch="${ROX_ORCHESTRATOR_PLATFORM-k8s}"
 
-    oc_version=$(kubectl get clusterversions.config.openshift.io version | tail -n 1 | awk '{print $2}')
-    if [[ "$oc_version" != "" ]]; then
+
+    if kubectl get clusterversions.config.openshift.io version &> /dev/null; then
         orch="openshift"
     fi
 
