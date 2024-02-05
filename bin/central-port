@@ -2,7 +2,6 @@
 
 # Create a port-forward to central which automatically restarts the process after a restart of the Central pod.
 
-# Function to start port forwarding
 start_port_forward() {
     kubectl -n stackrox port-forward svc/central 8000:443 &
     # Capture the process ID of the background process
@@ -10,7 +9,6 @@ start_port_forward() {
     wait $PORT_FORWARD_PID
 }
 
-# Function to check the connection
 check_connection() {
     while true; do
         # Use curl to ping the endpoint
