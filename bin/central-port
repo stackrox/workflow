@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Automatically restart the port-forwarding process after a restart of the Central pod.
+# Create a port-forward to central which automatically restarts the process after a restart of the Central pod.
 
 # Function to start port forwarding
 start_port_forward() {
