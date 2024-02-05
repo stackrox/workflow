@@ -32,6 +32,11 @@ _get_rox_admin_password() {
 
     local orch="${ROX_ORCHESTRATOR_PLATFORM-k8s}"
 
+
+    if kubectl get clusterversions.config.openshift.io version &> /dev/null; then
+        orch="openshift"
+    fi
+
 	if [[ "$orch" != k8s && "$orch" != openshift ]]; then
 		eerror "Invalid value for environment variable ROX_ORCHESTRATOR_PLATFORM: ${ROX_ORCHESTRATOR_PLATFORM-}. Valid values are 'k8s' and 'openshift'."
     	return 2
