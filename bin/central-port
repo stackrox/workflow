@@ -1,8 +1,6 @@
 #!/bin/bash
 
-# This script starts a port-forwarding process to a Central pod. It automatically detects Central in the current selected
-# namespace. When the pod restarts this script automatically re-establishes the port-forward to never loose the connection
-# again.
+# Automatically restart the port-forwarding process after a restart of the Central pod.
 
 # Function to start port forwarding
 start_port_forward() {
