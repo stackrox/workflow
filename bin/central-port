@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Create a port-forward to central which automatically restarts the process after a restart of the Central pod.
 
