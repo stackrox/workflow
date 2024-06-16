@@ -97,4 +97,4 @@ trap 'echo Stopping port forward; jobs -pr | xargs -r kill -INT' EXIT
 kubectl --namespace stackrox port-forward "${deployment}" "${port}":"${port}" &
 
 # This command should be started in foreground and with -it options so that Control-C can stop debugger.
-kubectl --namespace stackrox exec -it "${deployment}" -- /go/bin/dlv --headless --listen=:"${port}" --api-version=2 --accept-multiclient attach 1 --continue
+kubectl --namespace stackrox exec -it "${deployment}" -- /bin/sh -c "cd /tmp; /go/bin/dlv --headless --listen=:\"${port}\" --api-version=2 --accept-multiclient attach 1 --continue"
