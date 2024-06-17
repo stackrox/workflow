@@ -53,6 +53,73 @@ fi
 deployment=${positional[0]:-$DEFAULT_DEPLOYMENT}
 port=${port:-$DEFAULT_PORT}
 
+target_is_pod="false"
+deployment_name=""
+pod_name=""
+
+if [[ ! ($deployment =~ ^deploy/ || $deployment =~ ^deployment/) ]]; then
+  pod_name="${deployment}"
+  deployment="pod/${deployment}"
+  target_is_pod="true"
+fi
+deployment_name=$(kubectl -n stackrox get "${deployment}" -o "jsonpath={.metadata.labels.app}")
+
+container_name=""
+case "${deployment_name}" in
+  central)
+    container_name="central"
+    ;;
+  sensor)
+    container_name="sensor"
+    ;;
+  scanner)
+    container_name="scanner"
+    ;;
+  scanner-v4-matcher)
+    container_name="matcher"
+    ;;
+  scanner-v4-indexer)
+    container_name="indexer"
+    ;;
+  *)
+    echo >2 "Unknown deployment '$deployment', cannot tell which container is to be debugged."
+    exit 1
+    ;;
+esac
+
+if [[ $target_is_pod == "true" ]]; then
+  echo "Pod: ${deployment}"
+else
+  echo "Deployment: ${deployment}"
+fi
+echo "container: ${container_name}"
+echo
+
+# dlv seems to require a writable filesystem.
+ensure_target_filesystem_is_writable() {
+  local read_only_root_fs
+  if [[ "${target_is_pod}" == "true" ]]; then
+    read_only_root_fs=$(kubectl -n stackrox get "${deployment}" \
+      -o=jsonpath="{.spec.containers[?(@.name=='$container_name')].securityContext.readOnlyRootFilesystem}")
+    if [[ $read_only_root_fs == "true" ]]; then
+      echo >&2 "Cannot debug ${deployment}: the pod uses a read-only root filesystem"
+      exit 1
+    fi
+  else
+    read_only_root_fs=$(kubectl -n stackrox get "${deployment}" \
+      -o=jsonpath="{.spec.template.spec.containers[?(@.name=='${container_name}')].securityContext.readOnlyRootFilesystem}")
+    if [[ "${read_only_root_fs}" == "true" ]]; then
+      echo "Configuring root filesystem of container $container_name within ${deployment} to be read-write."
+      kubectl -n stackrox patch "${deployment}" \
+        -p '{"spec":{"template":{"spec":{"containers":[{"name":"sensor","securityContext":{"readOnlyRootFilesystem":false}}]}}}}'
+      # Unfortunately kubectl wait cannot wait yet for creation of new resources (pods, in this case).
+      # Hence, as a workaround to prevent a race here we need to wait a couple of seconds.
+      sleep 5
+      kubectl -n stackrox wait --for=condition=Ready pod -l app=sensor --timeout=60s
+    fi
+  fi
+}
+
 function ensure_debugging_is_allowed() {
   ptrace_scope_file="/proc/sys/kernel/yama/ptrace_scope"
   # If /proc/sys/kernel/yama/ptrace_scope is present and it contains anything non-zero, the following error will appear
@@ -87,7 +154,9 @@ function ensure_debugging_is_allowed() {
       --image=alpine debug-enabler -- /bin/sh -c "echo 0 > ${ptrace_scope_file}"
   fi
 }
+
 ensure_debugging_is_allowed
+ensure_target_filesystem_is_writable
 
 echo "Starting port forwarding and debugger for '${deployment}' on port '${port}'. Hit Control-C or Control-\ to stop..."
 
