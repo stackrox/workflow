@@ -55,14 +55,12 @@ port=${port:-$DEFAULT_PORT}
 
 target_is_pod="false"
 deployment_name=""
-pod_name=""
 
 if [[ ! ($deployment =~ ^deploy/ || $deployment =~ ^deployment/) ]]; then
-  pod_name="${deployment}"
   deployment="pod/${deployment}"
   target_is_pod="true"
 fi
-deployment_name=$(kubectl -n stackrox get "${deployment}" -o "jsonpath={.metadata.labels.app}")
+deployment_name="$(kubectl -n stackrox get "${deployment}" -o "jsonpath={.metadata.labels.app}")"
 
 container_name=""
 case "${deployment_name}" in
@@ -82,7 +80,7 @@ case "${deployment_name}" in
     container_name="indexer"
     ;;
   *)
-    echo >2 "Unknown deployment '$deployment', cannot tell which container is to be debugged."
+    echo >&2 "Unknown deployment '$deployment', cannot tell which container is to be debugged."
     exit 1
     ;;
 esac
@@ -99,23 +97,26 @@ echo
 ensure_target_filesystem_is_writable() {
   local read_only_root_fs
   if [[ "${target_is_pod}" == "true" ]]; then
-    read_only_root_fs=$(kubectl -n stackrox get "${deployment}" \
-      -o=jsonpath="{.spec.containers[?(@.name=='$container_name')].securityContext.readOnlyRootFilesystem}")
+    read_only_root_fs="$(kubectl -n stackrox get "${deployment}" \
+      -o=jsonpath="{.spec.containers[?(@.name=='${container_name}')].securityContext.readOnlyRootFilesystem}")"
     if [[ $read_only_root_fs == "true" ]]; then
       echo >&2 "Cannot debug ${deployment}: the pod uses a read-only root filesystem"
       exit 1
     fi
   else
-    read_only_root_fs=$(kubectl -n stackrox get "${deployment}" \
-      -o=jsonpath="{.spec.template.spec.containers[?(@.name=='${container_name}')].securityContext.readOnlyRootFilesystem}")
+    read_only_root_fs=$(kubectl -n stackrox get "${deployment}" -o=jsonpath="{.spec.template.spec.containers[?(@.name=='${container_name}')].securityContext.readOnlyRootFilesystem}")
     if [[ "${read_only_root_fs}" == "true" ]]; then
-      echo "Configuring root filesystem of container $container_name within ${deployment} to be read-write."
-      kubectl -n stackrox patch "${deployment}" \
-        -p '{"spec":{"template":{"spec":{"containers":[{"name":"sensor","securityContext":{"readOnlyRootFilesystem":false}}]}}}}'
+      local patch_root_fs_ro="{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"${deployment_name}\",\"securityContext\":{\"readOnlyRootFilesystem\":true}}]}}}}"
+      local patch_root_fs_rw="{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"${deployment_name}\",\"securityContext\":{\"readOnlyRootFilesystem\":false}}]}}}}"
+      echo "Configuring root filesystem of container ${container_name} within ${deployment} to be read-write."
+      echo "Remember to undo this change after debugging. For example, by executing:"
+      echo "  $ kubectl -n stackrox patch '${deployment}' -p '${patch_root_fs_ro}'"
+      echo
+      kubectl -n stackrox patch "${deployment}" -p "${patch_root_fs_rw}"
       # Unfortunately kubectl wait cannot wait yet for creation of new resources (pods, in this case).
       # Hence, as a workaround to prevent a race here we need to wait a couple of seconds.
       sleep 5
-      kubectl -n stackrox wait --for=condition=Ready pod -l app=sensor --timeout=60s
+      kubectl -n stackrox wait --for=condition=Ready pod -l app="${deployment_name}" --timeout=60s
     fi
   fi
 }
