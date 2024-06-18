@@ -104,7 +104,7 @@ ensure_target_filesystem_is_writable() {
       exit 1
     fi
   else
-    read_only_root_fs=$(kubectl -n stackrox get "${deployment}" -o=jsonpath="{.spec.template.spec.containers[?(@.name=='${container_name}')].securityContext.readOnlyRootFilesystem}")
+    read_only_root_fs="$(kubectl -n stackrox get "${deployment}" -o=jsonpath="{.spec.template.spec.containers[?(@.name=='${container_name}')].securityContext.readOnlyRootFilesystem}")"
     if [[ "${read_only_root_fs}" == "true" ]]; then
       local patch_root_fs_ro="{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"${deployment_name}\",\"securityContext\":{\"readOnlyRootFilesystem\":true}}]}}}}"
       local patch_root_fs_rw="{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"${deployment_name}\",\"securityContext\":{\"readOnlyRootFilesystem\":false}}]}}}}"
