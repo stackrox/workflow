@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# Fetches cluster artifacts from infra.rox.systems and regenerates your ~/.kube/config.
+
+set -euo pipefail
+
+infra_dir="$HOME/.kube/infra"
+clusters_dir="$infra_dir/clusters"
+
+os=$(uname -o)
+OS_MACOS="Darwin"
+
+export INFRA_TOKEN="${INFRA_TOKEN:-}"
+if [[ "${INFRA_TOKEN}" == "" ]]; then
+    if [[ "${os}" == "Darwin" ]]; then
+        case "${os}" in
+            "${OS_MACOS}")
+                if token=$(security find-generic-password -s infra.rox.systems -D token -a "" -l acs -w); then
+                    INFRA_TOKEN="${token}"
+                else
+                    echo >&2 "Failed to retrieve token from Keychain"
+                    echo >&2 "Use the following command for saving your infra token in Keychain:"
+                    echo >&2
+                    echo >&2 "  $ security add-generic-password -s infra.rox.systems -D token -a \"\" -l acs -T \"\" -w \"YOUR_INFRA_TOKEN\""
+                    echo >&2
+                    exit 1
+                fi
+                ;;
+        esac
+
+    fi
+
+fi
+
+mkdir -p "${clusters_dir}"
+
+echo "Syncing your infra clusters..."
+
+for cluster_dir in "${clusters_dir}"/*; do
+    cluster_name=$(basename "${cluster_dir}")   
+    rm -rf "${clusters_dir:?}/$cluster_name"
+done
+
+# Fetching artifacts for infra clusters.
+cluster_names=""
+if ! cluster_names=$(infractl list --json | jq -r "(.Clusters // [])[].ID"); then
+    echo >&2 "Failed to retrieve clusters names from infra."
+    exit 1
+fi
+
+idx=0
+for cluster_name in ${cluster_names}; do
+    idx=$((idx + 1))
+    cluster_dir="${clusters_dir}/${cluster_name}"
+    echo "Downloading artifacts for cluster ${cluster_name} into ${clusters_dir}"
+    infractl artifacts "${cluster_name}" --download-dir="${cluster_dir}" >/dev/null
+    if [ -e "${cluster_dir}/kubeconfig" ]; then
+        chmod 600 "${cluster_dir}/kubeconfig"
+    else
+        echo "  Skipping (cluster not ready yet)"
+    fi
+done
+
+if [[ $idx == 0 ]]; then
+    echo "No clusters found."
+fi
+
+kubecfg-merge

@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Regenerates your ~/.kube/config by merging the files ~/.kube/config.* and ~/.kube/infra/clusters/*/kubeconfig.
+
+set -euo pipefail
+
+MERGED_KUBECONFIG="${HOME}/.kube/config"
+export KUBECONFIG="/dev/null"
+
+infra_dir="$HOME/.kube/infra"
+clusters_dir="${infra_dir}/clusters"
+
+# Fetching artifacts for infra clusters.
+for cluster_dir in "${clusters_dir}"/*; do
+	if [ -e "${cluster_dir}/kubeconfig" ]; then
+		KUBECONFIG="${KUBECONFIG}:${cluster_dir}/kubeconfig"
+	fi
+done
+
+for f in "${HOME}"/.kube/config.*; do
+	KUBECONFIG="${KUBECONFIG}:${f}"
+done
+
+echo "Merging kube configurations into ${MERGED_KUBECONFIG}"
+kubectl config view --flatten > "${MERGED_KUBECONFIG}"
+
