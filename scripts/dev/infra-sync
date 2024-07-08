@@ -7,28 +7,27 @@ infra_dir="$HOME/.kube/infra"
 clusters_dir="$infra_dir/clusters"
 
 os=$(uname -o)
-OS_MACOS="Darwin"
 
 export INFRA_TOKEN="${INFRA_TOKEN:-}"
 if [[ "${INFRA_TOKEN}" == "" ]]; then
-    if [[ "${os}" == "Darwin" ]]; then
-        case "${os}" in
-            "${OS_MACOS}")
-                if token=$(security find-generic-password -s infra.rox.systems -D token -a "" -l acs -w); then
-                    INFRA_TOKEN="${token}"
-                else
-                    echo >&2 "Failed to retrieve token from Keychain"
-                    echo >&2 "Use the following command for saving your infra token in Keychain:"
-                    echo >&2
-                    echo >&2 "  $ security add-generic-password -s infra.rox.systems -D token -a \"\" -l acs -T \"\" -w \"YOUR_INFRA_TOKEN\""
-                    echo >&2
-                    exit 1
-                fi
-                ;;
-        esac
-
-    fi
-
+    case "${os}" in
+        "Darwin")
+            if token=$(security find-generic-password -s infra.rox.systems -D token -a "" -l acs -w); then
+                INFRA_TOKEN="${token}"
+            else
+                echo >&2 "Failed to retrieve token from Keychain"
+                echo >&2 "Use the following command for saving your infra token in Keychain:"
+                echo >&2
+                echo >&2 "  $ security add-generic-password -s infra.rox.systems -D token -a \"\" -l acs -T \"\" -w \"YOUR_INFRA_TOKEN\""
+                echo >&2
+                exit 1
+            fi
+            ;;
+        *)
+            echo >&2 "INFRA_TOKEN is not set and support for retrieving a token has not been implemented on ${os}."
+            exit 1
+            ;;
+    esac
 fi
 
 mkdir -p "${clusters_dir}"
