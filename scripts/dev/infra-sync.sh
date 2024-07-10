@@ -91,6 +91,7 @@ kubecfg_merge() {
 
     echo "Merging kube configurations into ${infra_kubeconfig}"
     kubectl config view --flatten > "${infra_kubeconfig}"
+    chmod 600 "${infra_kubeconfig}"
 }
 
 kubecfg_merge
