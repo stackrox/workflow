@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fetches cluster artifacts from infra.rox.systems and merged them into a kubeconfig file.
+# Fetches cluster artifacts from infra.rox.systems and merges them into a kubeconfig file.
 
 set -euo pipefail
 
