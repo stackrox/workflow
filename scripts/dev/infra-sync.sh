@@ -9,7 +9,7 @@ clusters_dir="${infra_dir}/clusters"
 infra_kubeconfig="${INFRA_KUBECONFIG:-${infra_dir}/kubeconfig}"
 extra_kubeconfigs="${EXTRA_KUBECONFIGS:-}"
 
-delete_cluster_artifacts() {
+clean_infra_cluster_cache() {
     echo "Deleting old cluster artifacts..."
     # Just a couple of safety checks to make sure that we are not attempting to delete
     # something like `/`.
@@ -23,52 +23,54 @@ delete_cluster_artifacts() {
     find "${clusters_dir}" -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} +
 }
 
-export INFRA_TOKEN="${INFRA_TOKEN:-}"
-if [[ "${INFRA_TOKEN}" == "" ]]; then
-    case "${os}" in
-        "Darwin")
-            if token=$(security find-generic-password -s infra.rox.systems -D token -a "" -l acs -w); then
-                INFRA_TOKEN="${token}"
-            else
-                echo >&2 "Failed to retrieve token from Keychain"
-                echo >&2 "Use the following command for saving your infra token in Keychain:"
-                echo >&2
-                echo >&2 "  $ security add-generic-password -s infra.rox.systems -D token -a \"\" -l acs -T \"\" -w \"YOUR_INFRA_TOKEN\""
-                echo >&2
+fetch_infra_clusters() {
+    export INFRA_TOKEN="${INFRA_TOKEN:-}"
+    if [[ "${INFRA_TOKEN}" == "" ]]; then
+        case "${os}" in
+            "Darwin")
+                if token=$(security find-generic-password -s infra.rox.systems -D token -a "" -l acs -w); then
+                    INFRA_TOKEN="${token}"
+                else
+                    echo >&2 "Failed to retrieve token from Keychain"
+                    echo >&2 "Use the following command for saving your infra token in Keychain:"
+                    echo >&2
+                    echo >&2 "  $ security add-generic-password -s infra.rox.systems -D token -a \"\" -l acs -T \"\" -w \"YOUR_INFRA_TOKEN\""
+                    echo >&2
+                    exit 1
+                fi
+            ;;
+            *)
+                echo >&2 "INFRA_TOKEN is not set and support for retrieving a token has not been implemented on ${os}."
                 exit 1
-            fi
             ;;
-        *)
-            echo >&2 "INFRA_TOKEN is not set and support for retrieving a token has not been implemented on ${os}."
-            exit 1
-            ;;
-    esac
-fi
+        esac
+    fi
 
-echo "Syncing your infra clusters..."
-delete_cluster_artifacts
+    echo "Syncing your infra clusters..."
+    clean_infra_cluster_cache
 
-# Fetching artifacts for infra clusters.
-cluster_names=""
-if ! cluster_names=$(infractl list --json | jq -r '(.Clusters // [])[] | select(.Status==2).ID'); then
-    echo >&2 "Failed to retrieve clusters names from infra."
-    exit 1
-fi
+    # Fetching artifacts for infra clusters.
+    cluster_names=""
+    if ! cluster_names=$(infractl list --json | jq -r '(.Clusters // [])[] | select(.Status==2).ID'); then
+        echo >&2 "Failed to retrieve clusters names from infra."
+        exit 1
+    fi
 
-idx=0
-for cluster_name in ${cluster_names}; do
-    idx=$((idx + 1))
-    cluster_dir="${clusters_dir}/${cluster_name}"
-    echo "Downloading artifacts for cluster ${cluster_name} into ${clusters_dir}"
-    infractl artifacts "${cluster_name}" --download-dir="${cluster_dir}" >/dev/null
-    kubeconfig="${cluster_dir}/kubeconfig"
-    chmod 600 "${kubeconfig}"
-    echo "Stored kubeconfig at ${kubeconfig}"
-done
+    idx=0
+    for cluster_name in ${cluster_names}; do
+        idx=$((idx + 1))
+        cluster_dir="${clusters_dir}/${cluster_name}"
+        echo "Downloading artifacts for cluster ${cluster_name} into ${clusters_dir}"
+        infractl artifacts "${cluster_name}" --download-dir="${cluster_dir}" >/dev/null
+        kubeconfig="${cluster_dir}/kubeconfig"
+        chmod 600 "${kubeconfig}"
+        echo "Stored kubeconfig at ${kubeconfig}"
+    done
 
-if [[ $idx == 0 ]]; then
-    echo "No ready clusters found."
-fi
+    if [[ $idx == 0 ]]; then
+        echo "No ready clusters found."
+    fi
+}
 
 kubecfg_merge() {
     # Backup previous kubeconfig file.
@@ -94,4 +96,5 @@ kubecfg_merge() {
     chmod 600 "${infra_kubeconfig}"
 }
 
+fetch_infra_clusters
 kubecfg_merge
