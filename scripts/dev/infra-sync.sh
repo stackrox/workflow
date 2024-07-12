@@ -92,8 +92,9 @@ kubecfg_merge() {
     fi
 
     echo "Merging kube configurations into ${infra_kubeconfig}"
-    kubectl config view --flatten > "${infra_kubeconfig}"
-    chmod 600 "${infra_kubeconfig}"
+    tmp_infra_kubeconfig=$(mktemp)
+    kubectl config view --flatten > "${tmp_infra_kubeconfig}"
+    mv "${tmp_infra_kubeconfig}" "${infra_kubeconfig}"
 }
 
 fetch_infra_clusters
