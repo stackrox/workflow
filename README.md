@@ -39,6 +39,7 @@ gcup - Brings up the GCP dev VM.
 getcreds - Imports credentials for a cluster from setup and creates RBAC role bindings.
 getprnumber - Gets the PR number corresponding to the current checked out branch.
 gogen - Runs go generate rooted at the current working directory (or a directory specified as the first
+infra-sync - Fetches cluster artifacts from infra.rox.systems and merges them into a kubeconfig file.
 killpf - killpf <port> kills a kubectl port-forward running on the passed port, if there is one. Note that it ONLY kills kubectl port-forwards, not arbtirary processes.
 logmein - Opens a browser, logging you in as the same user that `roxcurl` uses.
 mergekconf - This command merges the provided kubeconfig file into the base one used by kubectl.
