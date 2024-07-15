@@ -8,6 +8,7 @@ infra_dir="${HOME}/.kube/infra"
 clusters_dir="${infra_dir}/clusters"
 infra_kubeconfig="${INFRA_KUBECONFIG:-${infra_dir}/kubeconfig}"
 extra_kubeconfigs="${EXTRA_KUBECONFIGS:-}"
+original_kubeconfig="${KUBECONFIG:-}"
 
 clean_infra_cluster_cache() {
     echo "Deleting old cluster artifacts..."
@@ -99,3 +100,9 @@ kubecfg_merge() {
 
 fetch_infra_clusters
 kubecfg_merge
+
+if [[ "${original_kubeconfig}" != "${infra_kubeconfig}" ]]; then
+    echo
+    echo "For accessing the infra clusters you can use"
+    echo "export KUBECONFIG=\"${infra_kubeconfig}\""
+fi
