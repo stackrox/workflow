@@ -31,6 +31,7 @@ if kubectl api-versions | grep -q openshift.io; then
   done
   oc delete route central -n stackrox
   oc delete route central-mtls -n stackrox
+  oc delete route central-reencrypt -n stackrox
   oc -n kube-system get rolebinding -o name -l app.kubernetes.io/name=stackrox | xargs oc -n kube-system delete --wait
   oc -n openshift-monitoring get prometheusrule,servicemonitor -o name -l app.kubernetes.io/name=stackrox | xargs oc -n openshift-monitoring delete --wait
 fi
