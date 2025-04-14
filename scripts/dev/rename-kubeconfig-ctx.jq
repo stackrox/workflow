@@ -1,4 +1,11 @@
 #!/usr/bin/env -S jq -f
+#
+# Pass JSON kubeconfig to this jq script to rename
+# the contexts to the referenced cluster names,
+# and the cluster names to the referenced user names.
+# This should help to merge kubeconfigs with non-unique
+# contexts and user names.
+#
 . as $cfg
 | (
   # Build context_map as an array of objects with name transformations.
@@ -8,7 +15,11 @@
       cluster: .context.cluster,
       old_user: .context.user,
       new_name: .context.cluster,
-      new_user: (.context.user + "@" + .context.cluster)
+      new_user: (.context as $ctx
+        | .context.user
+        | (if endswith($ctx.cluster)
+           then . else (. + "@" + $ctx.cluster) end)
+      )
     })
 ) as $context_map
 # Reconstruct the config from scratch.
