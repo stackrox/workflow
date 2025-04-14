@@ -1,3 +1,4 @@
+#!/usr/bin/env -S jq -f
 . as $cfg
 | (
   # Build context_map as an array of objects with name transformations.
