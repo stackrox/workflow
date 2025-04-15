@@ -9,6 +9,7 @@ clusters_dir="${infra_dir}/clusters"
 infra_kubeconfig="${INFRA_KUBECONFIG:-${infra_dir}/kubeconfig}"
 extra_kubeconfigs="${EXTRA_KUBECONFIGS:-}"
 original_kubeconfig="${KUBECONFIG:-}"
+opts=($@)
 
 clean_infra_cluster_cache() {
     echo "Deleting old cluster artifacts..."
@@ -52,7 +53,7 @@ fetch_infra_clusters() {
 
     # Fetching artifacts for infra clusters.
     cluster_names=""
-    if ! cluster_names=$(infractl list --json | jq -r '(.Clusters // [])[] | select(.Status==2).ID'); then
+    if ! cluster_names=$(infractl list "${opts[@]}" --json | jq -r '(.Clusters // [])[] | select(.Status==2).ID'); then
         echo >&2 "Failed to retrieve clusters names from infra."
         exit 1
     fi
