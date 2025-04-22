@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+# Create a port-forward to central which automatically restarts the process after a restart of the Central pod.
+
+# Usage:
+#  central-port               Port-forwards local 8000 to Central and keeps the connection alive.
+
+start_port_forward() {
+    kubectl -n stackrox port-forward svc/central 8000:443 &
+    # Capture the process ID of the background process
+    PORT_FORWARD_PID=$!
+    wait $PORT_FORWARD_PID
+}
+
+check_connection() {
+    while true; do
+        # Use curl to ping the endpoint
+        if curl -sSf http://localhost:8000 > /dev/null; then
+            echo "Connection is active."
+        else
+            echo "Connection lost. Restarting port forward..."
+            # If the connection is lost, kill the port forward process
+            kill $PORT_FORWARD_PID
+            break
+        fi
+        sleep 1
+    done
+}
+
+# Main loop
+while true; do
+    echo "Starting port forward..."
+    start_port_forward
+
+    # Start the connection check in the background
+    check_connection &
+
+    # Wait for the port forward process to exit
+    wait $PORT_FORWARD_PID
+
+    # If the process exits, wait for a few seconds and restart
+    echo "Port forward process exited. Restarting in 5 seconds..."
+    sleep 5
+done
