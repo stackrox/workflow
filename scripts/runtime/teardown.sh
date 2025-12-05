@@ -29,14 +29,15 @@ kubectl -n stackrox get cm,deploy,ds,hpa,networkpolicy,role,rolebinding,secret,s
 # Only delete cluster-wide RBAC/PSP-related resources that contain have the app.kubernetes.io/name=stackrox label.
 kubectl -n stackrox get clusterrole,clusterrolebinding,psp,validatingwebhookconfiguration -o name -l app.kubernetes.io/name=stackrox | xargs kubectl -n stackrox delete --wait
 
-# Delete the SecurityPolicy CRD which is not labeled and can cause "managedFields must be nil" errors
-# if left behind when reinstalling via Helm.
-kubectl delete crd securitypolicies.config.stackrox.io --ignore-not-found
-
-# Delete monitoring ClusterRoles/ClusterRoleBindings that are managed by the stackrox-monitoring Helm release
-# and may not have the app.kubernetes.io/name=stackrox label.
-kubectl delete clusterrole stackrox-monitoring stackrox-monitoring-kube-state-metrics --ignore-not-found
-kubectl delete clusterrolebinding stackrox-monitoring-kube-state-metrics --ignore-not-found
+# Delete cluster-wide resources that are not labeled and may cause issues if left behind.
+# - SecurityPolicy CRD: can cause "managedFields must be nil" errors when reinstalling via Helm.
+# - Monitoring ClusterRoles/ClusterRoleBindings: managed by stackrox-monitoring Helm release.
+kubectl delete \
+  crd/securitypolicies.config.stackrox.io \
+  clusterrole/stackrox-monitoring \
+  clusterrole/stackrox-monitoring-kube-state-metrics \
+  clusterrolebinding/stackrox-monitoring-kube-state-metrics \
+  --ignore-not-found --wait
 
 ## DO NOT RUN THIS IN A CUSTOMER ENVIRONMENT, IT WILL DELETE ALL THEIR DATA
 ## AND THEY WILL NEVER TALK TO US AGAIN.
