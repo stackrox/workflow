@@ -7,6 +7,14 @@ source "$(dirname "$SCRIPT")/../../lib/common.sh"
 
 test_in_well_known_dev_context
 
+# Uninstall Helm releases first to let Helm clean up its managed resources properly.
+for release in stackrox-central-services stackrox-secured-cluster-services stackrox-monitoring; do
+  if helm status "$release" -n stackrox &>/dev/null; then
+    einfo "Uninstalling Helm release: $release"
+    helm uninstall "$release" -n stackrox --wait || true
+  fi
+done
+
 # Collect all stackrox PVs before we delete the respective PVCs.
 IFS=$'\n' read -d '' -r -a stackrox_pvs < <(
   kubectl get pv -o json | jq -r '.items[] | select(.spec.claimRef.namespace == "stackrox") | .metadata.name'
@@ -20,6 +28,16 @@ kubectl -n stackrox get application -o name | xargs kubectl -n stackrox delete -
 kubectl -n stackrox get cm,deploy,ds,hpa,networkpolicy,role,rolebinding,secret,svc,serviceaccount,pvc -o name | xargs kubectl -n stackrox delete --wait
 # Only delete cluster-wide RBAC/PSP-related resources that contain have the app.kubernetes.io/name=stackrox label.
 kubectl -n stackrox get clusterrole,clusterrolebinding,psp,validatingwebhookconfiguration -o name -l app.kubernetes.io/name=stackrox | xargs kubectl -n stackrox delete --wait
+
+# Delete cluster-wide resources that are not labeled and may cause issues if left behind.
+# - SecurityPolicy CRD: can cause "managedFields must be nil" errors when reinstalling via Helm.
+# - Monitoring ClusterRoles/ClusterRoleBindings: managed by stackrox-monitoring Helm release.
+kubectl delete \
+  crd/securitypolicies.config.stackrox.io \
+  clusterrole/stackrox-monitoring \
+  clusterrole/stackrox-monitoring-kube-state-metrics \
+  clusterrolebinding/stackrox-monitoring-kube-state-metrics \
+  --ignore-not-found --wait
 
 ## DO NOT RUN THIS IN A CUSTOMER ENVIRONMENT, IT WILL DELETE ALL THEIR DATA
 ## AND THEY WILL NEVER TALK TO US AGAIN.
