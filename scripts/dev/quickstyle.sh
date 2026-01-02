@@ -11,6 +11,160 @@ source "$(dirname "$SCRIPT")/../../setup/packages.sh"
 
 check_dependencies
 
+# quickstyle_repo_key returns a stable, filesystem-safe key for the current git repo root.
+# It is used for naming repo-scoped cache directories under the workflow workdir.
+function quickstyle_repo_key() {
+  echo "${gitroot}" | tr '/' '_'
+}
+
+# quickstyle_tools_cache_dir returns (and ensures) the directory where quickstyle may place
+# repo-scoped helper binaries (e.g. goimports) managed by workflow, not by the target repo.
+function quickstyle_tools_cache_dir() {
+  local repo_key
+  repo_key="$(quickstyle_repo_key)"
+  local tools_dir="${ROX_WORKFLOW_WORKDIR}/quickstyle/tools/${repo_key}"
+  mkdir -p "${tools_dir}"
+  echo "${tools_dir}"
+}
+
+# Try to resolve a tool path via the repo's Makefile gotools support (make/gotools.mk).
+# Many StackRox repos expose `which-<tool>` targets that print the tool's canonical binary; use those
+# to avoid relying on whatever happens to be in PATH/GOPATH.
+# Args:
+# - $1: tool basename (e.g. "roxvet", "golangci-lint", "goimports")
+# Output: prints an absolute path to stdout if found.
+# Returns: 0 if resolved; non-zero otherwise.
+function resolve_tool_via_make() {
+  local tool="$1"
+  [[ -n "${tool}" ]] || return 1
+  [[ -f "${gitroot}/Makefile" ]] || return 1
+  [[ -x "$(command -v make)" ]] || return 1
+  local resolved
+  resolved="$(make -C "${gitroot}" --quiet --no-print-directory "which-${tool}" 2>/dev/null)" || return 1
+  [[ -n "${resolved}" ]] || return 1
+  [[ -x "${resolved}" ]] || return 1
+  printf '%s\n' "${resolved}"
+}
+
+# resolve_tool_path attempts to find an executable tool by:
+# 1) repo-local Makefile ("make which-<tool>"), then
+# 2) PATH lookup.
+# Args:
+# - $1: tool basename
+# Output: prints resolved executable path to stdout.
+# Returns: 0 if resolved; non-zero otherwise.
+function resolve_tool_path() {
+  local tool="$1"
+  local resolved=""
+
+  resolved="$(resolve_tool_via_make "${tool}")" && { printf '%s\n' "${resolved}"; return 0; }
+
+  resolved="$(command -v "${tool}" 2>/dev/null)" || true
+  [[ -n "${resolved}" && -x "${resolved}" ]] || return 1
+  printf '%s\n' "${resolved}"
+}
+
+# go_major_minor extracts "<major>.<minor>" from a Go version string.
+# Example: "go1.24.9" -> "1.24"
+# Args:
+# - $1: value like "$(go env GOVERSION)" or "go1.24.9"
+# Output: prints "<major>.<minor>" to stdout.
+function go_major_minor() {
+  local goversion="$1"
+  # Examples: go1.24.9 -> 1.24 ; go1.22.7 -> 1.22
+  echo "${goversion}" | sed -E 's/^go([0-9]+\.[0-9]+).*/\1/'
+}
+
+# tool_built_with_go_major_minor returns the Go "<major>.<minor>" used to build a given binary.
+# This uses `go version -m`, so it requires the binary to contain build info.
+# Args:
+# - $1: path to an executable binary
+# Output: prints "<major>.<minor>" to stdout.
+# Returns: 0 if build info is available; non-zero otherwise.
+function tool_built_with_go_major_minor() {
+  local tool_path="$1"
+  [[ -n "${tool_path}" && -x "${tool_path}" ]] || return 1
+  local first_line
+  first_line="$(go version -m "${tool_path}" 2>/dev/null | head -n 1)" || return 1
+  # Format: /path/to/tool: go1.22.7
+  local tool_go_version
+  tool_go_version="$(echo "${first_line}" | awk '{print $2}')"
+  [[ -n "${tool_go_version}" ]] || return 1
+  go_major_minor "${tool_go_version}"
+}
+
+# ensure_goimports resolves a usable goimports binary.
+# Resolution order:
+# 1) repo-local Makefile ("make which-goimports"), then
+# 2) PATH, then
+# 3) workflow-managed install into a repo-scoped cache dir under ${ROX_WORKFLOW_WORKDIR}.
+# Notes:
+# - When installing, we try to pin to the repo's `golang.org/x/tools` module version if present;
+#   otherwise we fall back to @latest.
+# Output: prints the goimports executable path to stdout.
+# Returns: 0 if available; non-zero otherwise.
+function ensure_goimports() {
+  local goimports_bin
+  goimports_bin="$(resolve_tool_path goimports)" && { printf '%s\n' "${goimports_bin}"; return 0; }
+
+  local tools_dir
+  tools_dir="$(quickstyle_tools_cache_dir)"
+  goimports_bin="${tools_dir}/goimports"
+  [[ -x "${goimports_bin}" ]] && { printf '%s\n' "${goimports_bin}"; return 0; }
+
+  local x_tools_version
+  x_tools_version="$(cd "${gitroot}" && go list -m -f '{{.Version}}' golang.org/x/tools 2>/dev/null)" || true
+  local goimports_pkg="golang.org/x/tools/cmd/goimports@latest"
+  if [[ -n "${x_tools_version}" ]]; then
+    goimports_pkg="golang.org/x/tools/cmd/goimports@${x_tools_version}"
+  fi
+
+  einfo "goimports not found; installing ${goimports_pkg} into ${tools_dir}..."
+  if ! env GOBIN="${tools_dir}" go install "${goimports_pkg}"; then
+    efatal "Failed to install goimports (${goimports_pkg})."
+    efatal "Either install goimports on PATH, or ensure the repo exposes a 'which-goimports' Make target."
+    return 1
+  fi
+
+  [[ -x "${goimports_bin}" ]] || return 1
+  printf '%s\n' "${goimports_bin}"
+}
+
+# ensure_roxvet resolves a usable roxvet binary.
+# Resolution order:
+# 1) repo-local Makefile ("make which-roxvet"), then
+# 2) GOPATH/bin/roxvet.
+# If GOPATH/bin/roxvet exists but was built with a different Go major/minor than the current toolchain,
+# we attempt to rebuild it from ${gitroot}/tools/roxvet (when present) to avoid export-data panics.
+# Output: prints the roxvet executable path to stdout.
+# Returns: 0 if available; non-zero otherwise.
+function ensure_roxvet() {
+  local roxvet_bin=""
+  roxvet_bin="$(resolve_tool_via_make roxvet)" && { printf '%s\n' "${roxvet_bin}"; return 0; }
+
+  roxvet_bin="$(go env GOPATH)/bin/roxvet"
+
+  if [[ -x "${roxvet_bin}" ]]; then
+    local tool_go_mm
+    tool_go_mm="$(tool_built_with_go_major_minor "${roxvet_bin}")" || tool_go_mm=""
+    local cur_go_mm
+    cur_go_mm="$(go_major_minor "$(go env GOVERSION)")"
+
+    # If roxvet is stale (built with different Go major.minor), it can panic on newer export data.
+    if [[ -n "${tool_go_mm}" && "${tool_go_mm}" != "${cur_go_mm}" ]]; then
+      ewarn "roxvet (${roxvet_bin}) was built with Go ${tool_go_mm}, but current Go is ${cur_go_mm}; rebuilding..."
+      if [[ -d "${gitroot}/tools/roxvet" ]]; then
+        if ! (cd "${gitroot}" && env GOBIN="$(dirname "${roxvet_bin}")" go install ./tools/roxvet); then
+          ewarn "Failed to rebuild roxvet; continuing with existing binary (may fail)."
+        fi
+      fi
+    fi
+  fi
+
+  [[ -x "${roxvet_bin}" ]] || return 1
+  printf '%s\n' "${roxvet_bin}"
+}
+
 function newlinecheck() {
 	local check_newlines
 	check_newlines="$(
@@ -59,8 +213,10 @@ function gostyle() {
 	einfo "Running go style checks..."
 	if [[ -f "${gitroot}/.golangci.yml" ]]; then
 		einfo "golangci-lint"
-		if [[ -x "$(which golangci-lint)" ]]; then
-			golangci-lint run --allow-parallel-runners "${godirs[@]}" --fix && (( status == 0 ))
+		local golangci_lint_bin
+		golangci_lint_bin="$(resolve_tool_path golangci-lint)" || golangci_lint_bin=""
+		if [[ -n "${golangci_lint_bin}" && -x "${golangci_lint_bin}" ]]; then
+			"${golangci_lint_bin}" run --allow-parallel-runners "${godirs[@]}" --fix && (( status == 0 ))
 			status=$?
 		else
 			ewarn "No golangci-lint binary found, but the repo has a config file. Skipping..."
@@ -69,7 +225,9 @@ function gostyle() {
 
 	if ! golangci_linter_enabled 'goimports'; then
 		einfo "imports"
-		goimports -l -w "${gofiles[@]}" && (( status == 0 ))
+		local goimports_bin
+		goimports_bin="$(ensure_goimports)" || { status=1; return "${status}"; }
+		"${goimports_bin}" -l -w "${gofiles[@]}" && (( status == 0 ))
 		status=$?
 	fi
 
@@ -119,11 +277,9 @@ function gostyle() {
 	roxvet_includes_validateimports=0
 
 	einfo "roxvet"
-	local rox_vet="$(go env GOPATH)/bin/roxvet"
-	if [[ ! -x "${rox_vet}" ]] && [[ -d "${gitroot}/tools/roxvet" ]]; then
-	    go install "${gitroot}/tools/roxvet"
-	fi
-	if [[ -x "${rox_vet}" ]]; then
+	local rox_vet
+	rox_vet="$(ensure_roxvet)" || rox_vet=""
+	if [[ -n "${rox_vet}" && -x "${rox_vet}" ]]; then
 		go vet -vettool "${rox_vet}" "${godirs[@]}" && (( status == 0 ))
 		status=$?
 		if "${rox_vet}" help | grep -q validateimports; then
@@ -152,10 +308,6 @@ function gostyle() {
 }
 
 function golangci_linter_enabled() {
-  if [[ ! -x "$(command -v "golangci-lint")" ]]; then
-    return 1
-  fi
-
   local linter
   local enabled_linters
   linter="${1}"
