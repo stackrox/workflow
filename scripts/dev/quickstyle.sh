@@ -216,7 +216,9 @@ function gostyle() {
 		local golangci_lint_bin
 		golangci_lint_bin="$(resolve_tool_path golangci-lint)" || golangci_lint_bin=""
 		if [[ -n "${golangci_lint_bin}" && -x "${golangci_lint_bin}" ]]; then
-			"${golangci_lint_bin}" run --allow-parallel-runners "${godirs[@]}" --fix && (( status == 0 ))
+			# cd here and drop the gitroot prefix so we lint this clone, like CI.
+			local prefix="${gitroot}/"
+			(cd "${gitroot}" && "${golangci_lint_bin}" run --allow-parallel-runners "${godirs[@]#"$prefix"}" --fix) && (( status == 0 ))
 			status=$?
 		else
 			ewarn "No golangci-lint binary found, but the repo has a config file. Skipping..."
