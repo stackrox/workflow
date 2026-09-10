@@ -95,7 +95,7 @@ kubecfg_merge() {
 
     echo "Merging kube configurations into ${infra_kubeconfig}"
     tmp_infra_kubeconfig=$(mktemp)
-    kubectl config view --flatten > "${tmp_infra_kubeconfig}"
+    kubectl config view --flatten -o json | jq -f rename-kubeconfig-ctx.jq > "${tmp_infra_kubeconfig}"
     mv "${tmp_infra_kubeconfig}" "${infra_kubeconfig}"
 }
 
