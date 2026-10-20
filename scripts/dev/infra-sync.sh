@@ -9,7 +9,7 @@ clusters_dir="${infra_dir}/clusters"
 infra_kubeconfig="${INFRA_KUBECONFIG:-${infra_dir}/kubeconfig}"
 extra_kubeconfigs="${EXTRA_KUBECONFIGS:-}"
 original_kubeconfig="${KUBECONFIG:-}"
-opts=($@)
+opts=("$@")
 
 clean_infra_cluster_cache() {
     echo "Deleting old cluster artifacts..."
@@ -74,33 +74,10 @@ fetch_infra_clusters() {
     fi
 }
 
-kubecfg_merge() {
-    # Backup previous kubeconfig file.
-    infra_kubeconfig_backup="${infra_kubeconfig}.bkp"
-    if [[ -e "${infra_kubeconfig}" ]]; then
-        echo "Backing up previous infra kubeconfig ${infra_kubeconfig} as ${infra_kubeconfig_backup}"
-        mv "${infra_kubeconfig}" "${infra_kubeconfig_backup}"
-    fi
-
-    # Merge all the kubeconfigs.
-    export KUBECONFIG="/dev/null"
-    for cluster_dir in "${clusters_dir}"/*; do
-        if [ -e "${cluster_dir}/kubeconfig" ]; then
-            KUBECONFIG="${KUBECONFIG}:${cluster_dir}/kubeconfig"
-        fi
-    done
-    if [[ -n "${extra_kubeconfigs}" ]]; then
-        KUBECONFIG="${KUBECONFIG}:${extra_kubeconfigs}"
-    fi
-
-    echo "Merging kube configurations into ${infra_kubeconfig}"
-    tmp_infra_kubeconfig=$(mktemp)
-    kubectl config view --flatten > "${tmp_infra_kubeconfig}"
-    mv "${tmp_infra_kubeconfig}" "${infra_kubeconfig}"
-}
-
 fetch_infra_clusters
-kubecfg_merge
+echo "Merging kube configurations into ${infra_kubeconfig}"
+python3 "$(dirname "${BASH_SOURCE[0]}")/infra-sync-merge.py" \
+    "${clusters_dir}" "${infra_kubeconfig}" "${extra_kubeconfigs}"
 
 if [[ "${original_kubeconfig}" != "${infra_kubeconfig}" ]]; then
     echo
